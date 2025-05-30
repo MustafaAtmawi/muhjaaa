@@ -1,4 +1,4 @@
-import 'package:bloc/bloc.dart';
+import 'package:flutter_bloc/flutter_bloc.dart'; // CHANGED IMPORT
 import 'package:equatable/equatable.dart';
 import 'package:muhjaaa/models/chat_preview_model.dart';
 import 'package:muhjaaa/models/doctor_model.dart';

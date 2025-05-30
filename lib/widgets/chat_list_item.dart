@@ -11,7 +11,7 @@ class ChatListItem extends StatelessWidget {
   final VoidCallback? onTap;
 
   const ChatListItem({
-    super.key, // Use super.key
+    super.key,
     required this.senderName,
     required this.senderRole,
     required this.lastMessage,
@@ -40,7 +40,9 @@ class ChatListItem extends StatelessWidget {
             children: [
               CircleAvatar(
                 radius: 28,
-                backgroundColor: AppColors.mutedBlueGrey.withOpacity(0.7),
+                backgroundColor: AppColors.mutedBlueGrey.withAlpha(
+                  (0.7 * 255).round(),
+                ), // CORRECTED
                 child: Text(
                   placeholderLetter,
                   style: const TextStyle(
@@ -111,10 +113,7 @@ class ChatListItem extends StatelessWidget {
                       ),
                     ),
                   ] else ...[
-                    // Ensure consistent height even if badge is not present
-                    const SizedBox(
-                      height: 6 + 12 + 6 - 2,
-                    ), // Adjust if needed for perfect alignment
+                    const SizedBox(height: 6 + 12 + 6 - 2),
                   ],
                 ],
               ),

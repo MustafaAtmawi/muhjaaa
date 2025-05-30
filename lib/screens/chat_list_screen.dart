@@ -1,4 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:muhjaaa/cubits/chat/chat_list_cubit.dart';
+import 'package:muhjaaa/cubits/chat/conversation_cubit.dart'; // ADDED
+import 'package:muhjaaa/models/chat_preview_model.dart'; // Ensure this path is correct and model is defined
+import 'package:muhjaaa/models/doctor_model.dart'; // Ensure this path is correct
+import 'package:muhjaaa/repositories/chat_repository.dart'; // ADDED for context.read
+// import 'package:muhjaaa/screens/ai_mama_chat_screen.dart'; // Using named route instead
+import 'package:muhjaaa/screens/conversation_screen.dart';
 import 'package:muhjaaa/utils/app_colors.dart';
 import 'package:muhjaaa/widgets/active_doctor_avatar.dart';
 import 'package:muhjaaa/widgets/chat_list_item.dart';
@@ -11,65 +19,42 @@ class ChatListScreen extends StatefulWidget {
 }
 
 class _ChatListScreenState extends State<ChatListScreen> {
-  int _bottomNavIndex = 0;
+  int _bottomNavIndex = 2;
 
-  static const List<Map<String, String>> _activeDoctors = [
-    {'name': 'د. أحمد', 'placeholder': 'أ'},
-    {'name': 'د. فاطمة', 'placeholder': 'ف'},
-    {'name': 'د. يوسف', 'placeholder': 'ي'},
-    {'name': 'د. سارة', 'placeholder': 'س'},
-    {'name': 'د. عمر', 'placeholder': 'ع'},
-  ];
+  @override
+  void initState() {
+    super.initState();
+    context.read<ChatListCubit>().fetchChatListData();
+  }
 
-  static const List<Map<String, dynamic>> _chatMessages = [
-    {
-      'name': 'د. كريم',
-      'role': 'طبيب أطفال',
-      'message':
-          'جربي تتبعي روتين النوم يومياً، ورح تلاحظي الفرق بسرعة ان شاء الله.',
-      'time': '9:30 PM',
-      'unread': 1,
-      'placeholder': 'ك',
-    },
-    {
-      'name': 'د. علياء',
-      'role': 'اخصائية تغذية',
-      'message': 'بالتأكيد، يمكننا وضع خطة تغذية مناسبة لطفلك، متى يناسبك؟',
-      'time': '8:15 PM',
-      'unread': 0,
-      'placeholder': 'ع',
-    },
-    {
-      'name': 'د. سامي',
-      'role': 'طبيب عام',
-      'message': 'لا تقلقي، هذه الأعراض طبيعية جداً في هذه المرحلة.',
-      'time': 'أمس',
-      'unread': 2,
-      'placeholder': 'س',
-    },
-    {
-      'name': 'مجموعة الأمهات',
-      'role': 'دعم ومساندة',
-      'message': 'مرحباً بك في مجموعتنا! شاركينا استفساراتك.',
-      'time': 'الاثنين',
-      'unread': 0,
-      'placeholder': 'م',
-    },
-  ];
-
-  // IMPORTANT: This value needs to be the exact, consistent height of your ChatListItem.
-  // Measure it carefully or ensure your ChatListItem widget enforces a fixed height.
-  // For example, if each ChatListItem is exactly 78 pixels tall:
-  // final double _chatListItemExtent = 78.0;
+  void _navigateToDoctorChat(
+    BuildContext context,
+    ChatPreviewModel chatPreview,
+  ) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => BlocProvider<ConversationCubit>(
+          // Correctly provide ConversationCubit
+          create: (blocContext) => ConversationCubit(
+            chatRepository: blocContext
+                .read<ChatRepository>(), // Access ChatRepository
+            conversationId: chatPreview.id,
+          )..fetchMessages(),
+          child: ConversationScreen(
+            doctorName: chatPreview.senderName,
+            conversationId: chatPreview.id,
+            doctorPlaceholder: chatPreview.placeholderLetter,
+            doctorAvatarUrl: chatPreview.avatarUrl,
+          ),
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    // Determine a consistent height for ChatListItem.
-    // This might involve adjusting ChatListItem's internal layout (e.g., fixed heights, maxLines).
-    // For this example, let's assume you've determined it to be 80.0.
-    // You MUST verify this value for your actual ChatListItem widget.
-    const double chatListItemExtent =
-        80.0; // Example, replace with actual measured height
+    // const double chatListItemExtent = 80.0;
 
     return Scaffold(
       backgroundColor: AppColors.white,
@@ -85,16 +70,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                IconButton(
-                  icon: const Icon(
-                    Icons.arrow_back_ios,
-                    color: AppColors.darkGreyText,
-                    size: 22,
-                  ),
-                  onPressed: () {
-                    if (Navigator.canPop(context)) Navigator.pop(context);
-                  },
-                ),
+                const Spacer(),
                 const Text(
                   "المحادثات",
                   style: TextStyle(
@@ -104,118 +80,187 @@ class _ChatListScreenState extends State<ChatListScreen> {
                     fontSize: 20,
                   ),
                 ),
+                const Spacer(),
               ],
             ),
           ),
         ),
       ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 16.0,
-              vertical: 8.0,
-            ),
-            child: TextField(
-              textAlign: TextAlign.right,
-              style: const TextStyle(
-                fontFamily: 'Cairo',
-                fontSize: 14,
-                color: AppColors.darkGreyText,
+      body: BlocConsumer<ChatListCubit, ChatListState>(
+        listener: (context, state) {
+          if (state is ChatListFailure) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.message, textAlign: TextAlign.right),
+                backgroundColor: Colors.red,
               ),
-              decoration: InputDecoration(
-                hintText: "...البحث",
-                hintStyle: const TextStyle(
-                  fontFamily: 'Cairo',
-                  color: AppColors.lightGrey,
-                  fontSize: 14,
+            );
+          }
+        },
+        builder: (context, state) {
+          if (state is ChatListLoading || state is ChatListInitial) {
+            return const Center(
+              child: CircularProgressIndicator(color: AppColors.primaryRed),
+            );
+          }
+          if (state is ChatListLoaded) {
+            final List<DoctorModel> activeDoctors = state.activeDoctors;
+            final List<ChatPreviewModel> chatMessages = state.chatPreviews;
+
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16.0,
+                    vertical: 8.0,
+                  ),
+                  child: TextField(
+                    textAlign: TextAlign.right,
+                    style: const TextStyle(
+                      fontFamily: 'Cairo',
+                      fontSize: 14,
+                      color: AppColors.darkGreyText,
+                    ),
+                    decoration: InputDecoration(
+                      hintText: "...البحث",
+                      hintStyle: const TextStyle(
+                        fontFamily: 'Cairo',
+                        color: AppColors.lightGrey,
+                        fontSize: 14,
+                      ),
+                      prefixIcon: const Icon(
+                        Icons.search,
+                        color: AppColors.lightGrey,
+                        size: 22,
+                      ),
+                      filled: true,
+                      fillColor: AppColors.searchBarBg,
+                      contentPadding: const EdgeInsets.symmetric(
+                        vertical: 0,
+                        horizontal: 20,
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(25.0),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                  ),
                 ),
-                prefixIcon: const Icon(
-                  Icons.search,
-                  color: AppColors.lightGrey,
-                  size: 22,
+                if (activeDoctors.isNotEmpty) ...[
+                  const Padding(
+                    padding: EdgeInsets.only(
+                      right: 16.0,
+                      top: 10.0,
+                      bottom: 10.0,
+                    ),
+                    child: Text(
+                      "نشط الآن",
+                      style: TextStyle(
+                        fontFamily: 'Cairo',
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.darkGreyText,
+                      ),
+                    ),
+                  ),
+                  SizedBox(
+                    height: 80,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: activeDoctors.length,
+                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                      reverse: true,
+                      itemBuilder: (context, index) {
+                        final doctor = activeDoctors[index];
+                        return ActiveDoctorAvatar(
+                          placeholderLetter: doctor.placeholderLetter,
+                          onTap: () {
+                            final String doctorConversationId =
+                                "doctor_conv_${doctor.id}";
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => BlocProvider<ConversationCubit>(
+                                  // Correctly provide
+                                  create: (blocContext) => ConversationCubit(
+                                    chatRepository: blocContext
+                                        .read<ChatRepository>(),
+                                    conversationId: doctorConversationId,
+                                  )..fetchMessages(),
+                                  child: ConversationScreen(
+                                    doctorName: doctor.name,
+                                    conversationId: doctorConversationId,
+                                    doctorPlaceholder: doctor.placeholderLetter,
+                                    doctorAvatarUrl: doctor.avatarUrl,
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        );
+                      },
+                    ),
+                  ),
+                ],
+                const Padding(
+                  padding: EdgeInsets.only(right: 16.0, top: 16.0, bottom: 8.0),
+                  child: Text(
+                    "الرسائل",
+                    style: TextStyle(
+                      fontFamily: 'Cairo',
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.darkGreyText,
+                    ),
+                  ),
                 ),
-                filled: true,
-                fillColor: AppColors.searchBarBg,
-                contentPadding: const EdgeInsets.symmetric(
-                  vertical: 0,
-                  horizontal: 20,
+                Expanded(
+                  child: chatMessages.isEmpty
+                      ? const Center(
+                          child: Text(
+                            "لا توجد محادثات حتى الآن.",
+                            style: TextStyle(
+                              fontFamily: 'Cairo',
+                              fontSize: 16,
+                              color: AppColors.lightGrey,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        )
+                      : ListView.builder(
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                          itemCount: chatMessages.length,
+                          // itemExtent: chatListItemExtent,
+                          itemBuilder: (context, index) {
+                            final msgPreview = chatMessages[index];
+                            return ChatListItem(
+                              senderName: msgPreview.senderName,
+                              senderRole: msgPreview.senderRole,
+                              lastMessage: msgPreview.lastMessage,
+                              timestamp: msgPreview.timestamp,
+                              unreadCount: msgPreview.unreadCount,
+                              placeholderLetter: msgPreview.placeholderLetter,
+                              onTap: () =>
+                                  _navigateToDoctorChat(context, msgPreview),
+                            );
+                          },
+                        ),
                 ),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(25.0),
-                  borderSide: BorderSide.none,
-                ),
-              ),
-            ),
-          ),
-          const Padding(
-            padding: EdgeInsets.only(right: 16.0, top: 10.0, bottom: 10.0),
-            child: Text(
-              "نشط الآن",
-              style: TextStyle(
-                fontFamily: 'Cairo',
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: AppColors.darkGreyText,
-              ),
-            ),
-          ),
-          SizedBox(
-            height: 80, // Height for the horizontal list of active doctors
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: _activeDoctors.length,
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              reverse: true,
-              itemBuilder: (context, index) {
-                final doctor = _activeDoctors[index];
-                return ActiveDoctorAvatar(
-                  placeholderLetter: doctor['placeholder']!,
-                  onTap: () => print("Tapped on ${doctor['name']}"),
-                );
-              },
-            ),
-          ),
-          const Padding(
-            padding: EdgeInsets.only(right: 16.0, top: 16.0, bottom: 8.0),
-            child: Text(
-              "الرسائل",
-              style: TextStyle(
-                fontFamily: 'Cairo',
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: AppColors.darkGreyText,
-              ),
-            ),
-          ),
-          Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              itemCount: _chatMessages.length,
-              itemExtent: chatListItemExtent, // Using itemExtent
-              itemBuilder: (context, index) {
-                final msg = _chatMessages[index];
-                return ChatListItem(
-                  senderName: msg['name'],
-                  senderRole: msg['role'],
-                  lastMessage: msg['message'],
-                  timestamp: msg['time'],
-                  unreadCount: msg['unread'],
-                  placeholderLetter: msg['placeholder'],
-                  onTap: () => print("Tapped on chat with ${msg['name']}"),
-                );
-              },
-            ),
-          ),
-        ],
+              ],
+            );
+          }
+          return const Center(
+            child: Text("حدث خطأ ما", textAlign: TextAlign.right),
+          );
+        },
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
       floatingActionButton: Padding(
         padding: const EdgeInsets.only(bottom: 60.0),
         child: FloatingActionButton(
           onPressed: () {
-            print("Mama Muhja FAB tapped");
+            Navigator.pushNamed(context, '/ai_mama_chat');
           },
           backgroundColor: Colors.transparent,
           elevation: 0,
@@ -223,12 +268,16 @@ class _ChatListScreenState extends State<ChatListScreen> {
             'assets/images/AI_mama.png',
             width: 60,
             height: 60,
+            fit: BoxFit.contain,
           ),
         ),
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _bottomNavIndex,
-        onTap: (index) => setState(() => _bottomNavIndex = index),
+        onTap: (index) {
+          setState(() => _bottomNavIndex = index);
+          // TODO: Implement actual navigation based on index
+        },
         type: BottomNavigationBarType.fixed,
         backgroundColor: AppColors.white,
         selectedItemColor: AppColors.primaryRed,

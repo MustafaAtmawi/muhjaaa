@@ -1,63 +1,50 @@
 import 'package:equatable/equatable.dart';
-import 'package:muhjaaa/widgets/message_bubble.dart'; // Assuming SenderType is here
+// Removed import for SenderType as it's not used here.
 
-class MessageModel extends Equatable {
-  final String id;
-  final String text;
-  final SenderType senderType; // Using the existing enum
-  final String senderId; // ID of the user who sent the message
-  final DateTime timestamp;
-  final String? avatarInitial; // For user/doctor placeholder
-  final String? avatarAssetPath; // For AI Mama image
+class ChatPreviewModel extends Equatable {
+  final String id; // Conversation ID
+  final String senderName;
+  final String senderRole;
+  final String lastMessage;
+  final String timestamp; // Could be DateTime, formatted as String for display
+  final int unreadCount;
+  final String placeholderLetter;
+  final String? avatarUrl; // If you have avatar URLs from backend
 
-  const MessageModel({
+  const ChatPreviewModel({
     required this.id,
-    required this.text,
-    required this.senderType,
-    required this.senderId,
+    required this.senderName,
+    required this.senderRole,
+    required this.lastMessage,
     required this.timestamp,
-    this.avatarInitial,
-    this.avatarAssetPath,
+    required this.unreadCount,
+    required this.placeholderLetter,
+    this.avatarUrl,
   });
 
-  // Example: Factory constructor from JSON (you'll adapt this to your API)
-  factory MessageModel.fromJson(Map<String, dynamic> json) {
-    // Determine SenderType based on API data (e.g., senderId or a dedicated field)
-    SenderType determinedSenderType;
-    if (json['senderType'] != null) {
-      determinedSenderType = SenderType.values.firstWhere(
-        (e) => e.toString() == 'SenderType.${json['senderType']}',
-        orElse: () => SenderType.otherParty, // Default or error handling
-      );
-    } else if (json['senderId'] == 'ai_mama_id') {
-      // Example logic
-      determinedSenderType = SenderType.aiMama;
-    } else if (json['senderId'] == 'current_user_id_placeholder') {
-      // Example logic
-      determinedSenderType = SenderType.me;
-    } else {
-      determinedSenderType = SenderType.otherParty;
-    }
-
-    return MessageModel(
+  // Example: Factory constructor from JSON
+  factory ChatPreviewModel.fromJson(Map<String, dynamic> json) {
+    return ChatPreviewModel(
       id: json['id'] as String,
-      text: json['text'] as String,
-      senderType: determinedSenderType,
-      senderId: json['senderId'] as String,
-      timestamp: DateTime.parse(json['timestamp'] as String),
-      avatarInitial: json['avatarInitial'] as String?,
-      avatarAssetPath: json['avatarAssetPath'] as String?,
+      senderName: json['senderName'] as String,
+      senderRole: json['senderRole'] as String,
+      lastMessage: json['lastMessage'] as String,
+      timestamp: json['timestamp'] as String, // Or parse if DateTime
+      unreadCount: json['unreadCount'] as int,
+      placeholderLetter: json['placeholderLetter'] as String,
+      avatarUrl: json['avatarUrl'] as String?,
     );
   }
 
   @override
   List<Object?> get props => [
     id,
-    text,
-    senderType,
-    senderId,
+    senderName,
+    senderRole,
+    lastMessage,
     timestamp,
-    avatarInitial,
-    avatarAssetPath,
+    unreadCount,
+    placeholderLetter,
+    avatarUrl,
   ];
 }

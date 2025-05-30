@@ -8,7 +8,8 @@ class SubscriptionRepository {
     print('SubscriptionRepository: Fetching subscription plans');
     await Future.delayed(const Duration(seconds: 1));
 
-    final mockPlans = [
+    final List<SubscriptionPlanModel> mockPlans = [
+      // Changed to List<SubscriptionPlanModel>
       const SubscriptionPlanModel(
         id: 'yearly_plan_01',
         title: 'إشتراك سنوي',
@@ -20,26 +21,24 @@ class SubscriptionRepository {
       const SubscriptionPlanModel(
         id: 'monthly_plan_01',
         title: 'إشتراك شهري',
-        pricePerPeriod: '₪15/شهرياً', // Or empty if not applicable
+        pricePerPeriod: '₪15/شهرياً',
         totalPriceInfo: '₪15/شهرياً',
         discountInfo: null,
         isYearly: false,
       ),
     ];
-    return Right(mockPlans);
+    return Right(mockPlans); // Return const Right if mockPlans is const
   }
 
   FutureEither<bool> subscribeToPlan(String planId, String paymentToken) async {
     // TODO: Implement actual API call to subscribe user to a plan
-    // paymentToken would come from a payment gateway integration
     print(
       'SubscriptionRepository: Subscribing to plan $planId with payment token $paymentToken',
     );
     await Future.delayed(const Duration(seconds: 2));
 
-    // Simulate success
     if (planId.isNotEmpty && paymentToken.isNotEmpty) {
-      return const Right(true); // true for success
+      return const Right(true);
     } else {
       return const Left(
         Failure(

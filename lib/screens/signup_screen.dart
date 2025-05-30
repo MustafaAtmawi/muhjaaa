@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart'; // Ensure this import is present
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:muhjaaa/cubits/auth/auth_cubit.dart';
+import 'package:muhjaaa/screens/chat_list_screen.dart'; // Example home screen
 import 'package:muhjaaa/utils/app_colors.dart';
 import 'package:muhjaaa/widgets/custom_text_form_field.dart';
 
@@ -32,284 +35,328 @@ class _SignupScreenState extends State<SignupScreen> {
 
   void _handleSignup() {
     if (_formKey.currentState!.validate()) {
-      // Form is valid
-      // TODO: Call context.read<AuthCubit>().signup(...);
-      print("Signup form is valid. Placeholder for API call.");
+      context.read<AuthCubit>().signup(
+        username: _usernameController.text.trim(),
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+        firstName: _firstNameController.text.trim(),
+        lastName: _lastNameController.text.trim(),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors
-          .screenBackground, // Assuming you want the light off-white background
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0),
-          child: Column(
-            children: [
-              const SizedBox(height: 20),
-              SvgPicture.asset(
-                // Using SVG for logo
-                'assets/images/Muhja_logo.svg',
-                height:
-                    MediaQuery.of(context).size.height *
-                    0.15, // Adjusted from 0.25 for better balance
+      backgroundColor: AppColors.screenBackground,
+      body: BlocConsumer<AuthCubit, AuthState>(
+        listener: (context, state) {
+          if (state is Authenticated) {
+            // Navigate to home screen on successful signup and authentication
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(
+                builder: (_) => const ChatListScreen(),
+              ), // Or your main app screen
+            );
+          } else if (state is AuthFailure) {
+            // Show error message
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.message, textAlign: TextAlign.right),
+                backgroundColor: Colors.red,
               ),
-              const SizedBox(height: 10), // Adjusted spacing
-              const Text(
-                'التسجيل',
-                style: TextStyle(
-                  fontFamily: 'Cairo',
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.darkGreyText,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 20),
-              Expanded(
-                child: SingleChildScrollView(
-                  child: Form(
-                    key: _formKey,
-                    child: Column(
-                      children: [
-                        CustomTextFormField(
-                          controller: _usernameController,
-                          labelText: 'اسم المستخدم',
-                          prefixIcon: SvgPicture.asset(
-                            'assets/icons/Group.svg',
-                            width: 20,
-                            height: 20,
-                            colorFilter: const ColorFilter.mode(
-                              AppColors.lightGrey,
-                              BlendMode.srcIn,
-                            ),
-                          ),
-                          validator: (value) {
-                            if (value == null || value.isEmpty)
-                              return 'الرجاء إدخال اسم المستخدم';
-                            if (value.length < 3)
-                              return 'يجب أن لا يقل عن ٣ أحرف'; // Corrected message
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 16),
-                        CustomTextFormField(
-                          controller: _emailController,
-                          labelText: 'البريد الالكتروني',
-                          keyboardType: TextInputType.emailAddress,
-                          prefixIcon: const Icon(
-                            Icons.email_outlined,
-                            color: AppColors.lightGrey,
-                            size: 22,
-                          ),
-                          validator: (value) {
-                            if (value == null || value.isEmpty)
-                              return 'الرجاء إدخال البريد الإلكتروني';
-                            if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value))
-                              return 'الرجاء إدخال بريد إلكتروني صحيح';
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 16),
-                        Row(
+            );
+          }
+        },
+        builder: (context, state) {
+          bool isLoading = state is AuthLoading;
+
+          return SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24.0),
+              child: Column(
+                children: [
+                  const SizedBox(height: 20),
+                  SvgPicture.asset(
+                    'assets/images/Muhja_logo.svg',
+                    height: MediaQuery.of(context).size.height * 0.15,
+                  ),
+                  const SizedBox(height: 10),
+                  const Text(
+                    'التسجيل',
+                    style: TextStyle(
+                      fontFamily: 'Cairo',
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.darkGreyText,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 20),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      child: Form(
+                        key: _formKey,
+                        child: Column(
                           children: [
-                            Expanded(
-                              child: CustomTextFormField(
-                                controller: _firstNameController,
-                                labelText: 'الاسم الأول',
-                                prefixIcon: const Icon(
-                                  Icons.person_outline,
-                                  color: AppColors.lightGrey,
-                                  size: 22,
-                                ),
-                                validator: (value) {
-                                  if (value == null || value.isEmpty)
-                                    return 'الرجاء إدخال الاسم الأول';
-                                  if (value.length < 3)
-                                    return 'يجب أن لا يقل عن ٣ أحرف'; // Corrected message
-                                  return null;
-                                },
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: CustomTextFormField(
-                                controller: _lastNameController,
-                                labelText: 'اسم العائلة',
-                                prefixIcon: const Icon(
-                                  Icons.person_outline,
-                                  color: AppColors.lightGrey,
-                                  size: 22,
-                                ),
-                                validator: (value) {
-                                  if (value == null || value.isEmpty)
-                                    return 'الرجاء إدخال اسم العائلة';
-                                  if (value.length < 3)
-                                    return 'يجب أن لا يقل عن ٣ أحرف'; // Corrected message
-                                  return null;
-                                },
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        CustomTextFormField(
-                          controller: _passwordController,
-                          labelText: 'كلمة المرور',
-                          obscureText: !_isPasswordVisible,
-                          prefixIcon: SvgPicture.asset(
-                            'assets/icons/Lock-icon.svg',
-                            width: 20,
-                            height: 20,
-                            colorFilter: const ColorFilter.mode(
-                              AppColors.lightGrey,
-                              BlendMode.srcIn,
-                            ),
-                          ),
-                          suffixIcon: IconButton(
-                            icon: Icon(
-                              _isPasswordVisible
-                                  ? Icons.visibility_off_outlined
-                                  : Icons.visibility_outlined,
-                              color: AppColors.lightGrey,
-                              size: 22,
-                            ),
-                            onPressed: () => setState(
-                              () => _isPasswordVisible = !_isPasswordVisible,
-                            ),
-                          ),
-                          validator: (value) {
-                            if (value == null || value.isEmpty)
-                              return 'الرجاء إدخال كلمة المرور';
-                            if (value.length < 6)
-                              return 'كلمة المرور يجب أن لا تقل عن 6 أحرف';
-                            if (!RegExp(r'(?=.*[A-Z])').hasMatch(value))
-                              return 'يجب أن تحتوي كلمة المرور على حرف كبير واحد على الأقل';
-                            if (!RegExp(
-                              r'(?=.*[!@#\$%^&*(),.?":{}|<>])',
-                            ).hasMatch(value))
-                              return 'يجب أن تحتوي كلمة المرور على رمز واحد على الأقل';
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 32),
-                        SizedBox(
-                          width: double.infinity,
-                          height: 50,
-                          child: ElevatedButton(
-                            onPressed: _handleSignup,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.primaryRed,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              elevation: 0,
-                            ),
-                            child: const Text(
-                              'التسجيل',
-                              style: TextStyle(
-                                fontFamily: 'Cairo',
-                                fontSize: 18,
-                                fontWeight: FontWeight.w600,
-                                color: AppColors.white,
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-                        Row(
-                          children: [
-                            const Expanded(
-                              child: Divider(
-                                color: AppColors.lightGrey,
-                                thickness: 1,
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                              ),
-                              child: Text(
-                                'Or Continue with',
-                                style: TextStyle(
-                                  fontFamily: 'Cairo',
-                                  color: AppColors.lightGrey,
-                                  fontSize: 14,
+                            CustomTextFormField(
+                              controller: _usernameController,
+                              labelText: 'اسم المستخدم',
+                              prefixIcon: SvgPicture.asset(
+                                'assets/icons/Group.svg',
+                                width: 20,
+                                height: 20,
+                                colorFilter: const ColorFilter.mode(
+                                  AppColors.lightGrey,
+                                  BlendMode.srcIn,
                                 ),
                               ),
-                            ),
-                            const Expanded(
-                              child: Divider(
-                                color: AppColors.lightGrey,
-                                thickness: 1,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 24),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: <Widget>[
-                            InkWell(
-                              onTap: () {
-                                /* TODO: Google signup */
+                              validator: (value) {
+                                if (value == null || value.isEmpty)
+                                  return 'الرجاء إدخال اسم المستخدم';
+                                if (value.length < 3)
+                                  return 'يجب أن لا يقل عن ٣ أحرف';
+                                return null;
                               },
-                              child: SvgPicture.asset(
-                                'assets/icons/Google.svg',
-                                width: 40,
-                                height: 40,
-                              ),
                             ),
-                            const SizedBox(width: 25),
-                            InkWell(
-                              onTap: () {
-                                /* TODO: Facebook signup */
+                            const SizedBox(height: 16),
+                            CustomTextFormField(
+                              controller: _emailController,
+                              labelText: 'البريد الالكتروني',
+                              keyboardType: TextInputType.emailAddress,
+                              prefixIcon: const Icon(
+                                Icons.email_outlined,
+                                color: AppColors.lightGrey,
+                                size: 22,
+                              ),
+                              validator: (value) {
+                                if (value == null || value.isEmpty)
+                                  return 'الرجاء إدخال البريد الإلكتروني';
+                                if (!RegExp(
+                                  r'^[^@]+@[^@]+\.[^@]+',
+                                ).hasMatch(value))
+                                  return 'الرجاء إدخال بريد إلكتروني صحيح';
+                                return null;
                               },
-                              child: SvgPicture.asset(
-                                'assets/icons/Facebook.svg',
-                                width: 40,
-                                height: 40,
-                              ),
                             ),
-                          ],
-                        ),
-                        const SizedBox(height: 20),
-                        GestureDetector(
-                          onTap: () => Navigator.pop(context),
-                          child: RichText(
-                            textAlign: TextAlign.center,
-                            text: const TextSpan(
-                              style: TextStyle(
-                                fontFamily: 'Cairo',
-                                fontSize: 16.0,
-                                fontWeight: FontWeight.w600,
-                              ),
-                              children: <TextSpan>[
-                                TextSpan(
-                                  text: "لديك حساب؟ ",
-                                  style: TextStyle(
-                                    color: AppColors.mutedBlueGrey,
+                            const SizedBox(height: 16),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: CustomTextFormField(
+                                    controller: _firstNameController,
+                                    labelText: 'الاسم الأول',
+                                    prefixIcon: const Icon(
+                                      Icons.person_outline,
+                                      color: AppColors.lightGrey,
+                                      size: 22,
+                                    ),
+                                    validator: (value) {
+                                      if (value == null || value.isEmpty)
+                                        return 'الرجاء إدخال الاسم الأول';
+                                      if (value.length < 2)
+                                        return 'يجب أن لا يقل عن حرفين'; // Adjusted
+                                      return null;
+                                    },
                                   ),
                                 ),
-                                TextSpan(
-                                  text: "سجل الدخول",
-                                  style: TextStyle(color: AppColors.primaryRed),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: CustomTextFormField(
+                                    controller: _lastNameController,
+                                    labelText: 'اسم العائلة',
+                                    prefixIcon: const Icon(
+                                      Icons.person_outline,
+                                      color: AppColors.lightGrey,
+                                      size: 22,
+                                    ),
+                                    validator: (value) {
+                                      if (value == null || value.isEmpty)
+                                        return 'الرجاء إدخال اسم العائلة';
+                                      if (value.length < 2)
+                                        return 'يجب أن لا يقل عن حرفين'; // Adjusted
+                                      return null;
+                                    },
+                                  ),
                                 ),
                               ],
                             ),
-                          ),
+                            const SizedBox(height: 16),
+                            CustomTextFormField(
+                              controller: _passwordController,
+                              labelText: 'كلمة المرور',
+                              obscureText: !_isPasswordVisible,
+                              prefixIcon: SvgPicture.asset(
+                                'assets/icons/Lock-icon.svg',
+                                width: 20,
+                                height: 20,
+                                colorFilter: const ColorFilter.mode(
+                                  AppColors.lightGrey,
+                                  BlendMode.srcIn,
+                                ),
+                              ),
+                              suffixIcon: IconButton(
+                                icon: Icon(
+                                  _isPasswordVisible
+                                      ? Icons.visibility_off_outlined
+                                      : Icons.visibility_outlined,
+                                  color: AppColors.lightGrey,
+                                  size: 22,
+                                ),
+                                onPressed: () => setState(
+                                  () =>
+                                      _isPasswordVisible = !_isPasswordVisible,
+                                ),
+                              ),
+                              validator: (value) {
+                                if (value == null || value.isEmpty)
+                                  return 'الرجاء إدخال كلمة المرور';
+                                if (value.length < 6)
+                                  return 'كلمة المرور يجب أن لا تقل عن 6 أحرف';
+                                // if (!RegExp(r'(?=.*[A-Z])').hasMatch(value)) return 'يجب أن تحتوي كلمة المرور على حرف كبير واحد على الأقل';
+                                // if (!RegExp(r'(?=.*[!@#\$%^&*(),.?":{}|<>])').hasMatch(value)) return 'يجب أن تحتوي كلمة المرور على رمز واحد على الأقل';
+                                return null;
+                              },
+                            ),
+                            const SizedBox(height: 32),
+                            SizedBox(
+                              width: double.infinity,
+                              height: 60,
+                              child: ElevatedButton(
+                                onPressed: isLoading ? null : _handleSignup,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppColors.primaryRed,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  elevation: 0,
+                                ),
+                                child: isLoading
+                                    ? const SizedBox(
+                                        width: 24,
+                                        height: 24,
+                                        child: CircularProgressIndicator(
+                                          color: Colors.white,
+                                          strokeWidth: 3,
+                                        ),
+                                      )
+                                    : const Text(
+                                        'التسجيل',
+                                        style: TextStyle(
+                                          fontFamily: 'Cairo',
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.w600,
+                                          color: AppColors.white,
+                                        ),
+                                      ),
+                              ),
+                            ),
+                            const SizedBox(height: 24),
+                            Row(
+                              children: [
+                                const Expanded(
+                                  child: Divider(
+                                    color: AppColors.lightGrey,
+                                    thickness: 1,
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                  ),
+                                  child: Text(
+                                    'أو أكمل بواسطة', // "Or Continue with"
+                                    style: TextStyle(
+                                      fontFamily: 'Cairo',
+                                      color: AppColors.lightGrey,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ),
+                                const Expanded(
+                                  child: Divider(
+                                    color: AppColors.lightGrey,
+                                    thickness: 1,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 24),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: <Widget>[
+                                InkWell(
+                                  onTap: isLoading
+                                      ? null
+                                      : () {
+                                          /* TODO: Google signup */
+                                          print("Google signup tapped");
+                                        },
+                                  child: SvgPicture.asset(
+                                    'assets/icons/Google.svg',
+                                    width: 55,
+                                    height: 55,
+                                  ),
+                                ),
+                                const SizedBox(width: 25),
+                                InkWell(
+                                  onTap: isLoading
+                                      ? null
+                                      : () {
+                                          /* TODO: Facebook signup */
+                                          print("Facebook signup tapped");
+                                        },
+                                  child: SvgPicture.asset(
+                                    'assets/icons/Facebook.svg',
+                                    width: 55,
+                                    height: 55,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 20),
+                            GestureDetector(
+                              onTap: isLoading
+                                  ? null
+                                  : () => Navigator.pop(
+                                      context,
+                                    ), // Go back to Login
+                              child: RichText(
+                                textAlign: TextAlign.center,
+                                text: const TextSpan(
+                                  style: TextStyle(
+                                    fontFamily: 'Cairo',
+                                    fontSize: 16.0,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                  children: <TextSpan>[
+                                    TextSpan(
+                                      text: "لديك حساب؟ ",
+                                      style: TextStyle(
+                                        color: AppColors.mutedBlueGrey,
+                                      ),
+                                    ),
+                                    TextSpan(
+                                      text: "سجل الدخول",
+                                      style: TextStyle(
+                                        color: AppColors.primaryRed,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+                          ],
                         ),
-                        const SizedBox(height: 20),
-                      ],
+                      ),
                     ),
                   ),
-                ),
+                ],
               ),
-            ],
-          ),
-        ),
+            ),
+          );
+        },
       ),
     );
   }

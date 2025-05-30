@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:muhjaaa/utils/app_colors.dart';
 
+// Define SenderType enum here
 enum SenderType { me, otherParty, aiMama }
 
 class MessageBubble extends StatelessWidget {
@@ -10,7 +11,7 @@ class MessageBubble extends StatelessWidget {
   final String? avatarAssetPath;
 
   const MessageBubble({
-    super.key, // Use super.key
+    super.key,
     required this.text,
     required this.senderType,
     this.avatarInitial,
@@ -35,7 +36,9 @@ class MessageBubble extends StatelessWidget {
           padding: const EdgeInsets.only(left: 8.0),
           child: CircleAvatar(
             radius: 16,
-            backgroundColor: AppColors.primaryOrange.withOpacity(0.7),
+            backgroundColor: AppColors.primaryOrange.withAlpha(
+              (0.7 * 255).round(),
+            ),
             child: Text(
               avatarInitial!,
               style: const TextStyle(
@@ -69,6 +72,7 @@ class MessageBubble extends StatelessWidget {
         );
       }
     } else {
+      // SenderType.otherParty
       bubbleColor = AppColors.userMessageBg;
       textColor = AppColors.darkGreyText;
       rowMainAxisAlignment = MainAxisAlignment.start;
@@ -77,7 +81,9 @@ class MessageBubble extends StatelessWidget {
           padding: const EdgeInsets.only(right: 8.0),
           child: CircleAvatar(
             radius: 16,
-            backgroundColor: AppColors.mutedBlueGrey.withOpacity(0.7),
+            backgroundColor: AppColors.mutedBlueGrey.withAlpha(
+              (0.7 * 255).round(),
+            ),
             child: Text(
               avatarInitial!,
               style: const TextStyle(
@@ -118,11 +124,15 @@ class MessageBubble extends StatelessWidget {
             children: [
               if (isBulletPoint)
                 Padding(
-                  padding: const EdgeInsets.only(left: 4.0, right: 0, top: 4.0),
+                  padding: const EdgeInsets.only(
+                    left: 4.0,
+                    right: 0,
+                    top: 4.0,
+                  ), // For RTL, bullet is left of text line in bubble
                   child: Icon(
                     Icons.circle,
                     size: 6,
-                    color: textColor.withOpacity(0.7),
+                    color: textColor.withAlpha((0.7 * 255).round()),
                   ),
                 ),
               Flexible(

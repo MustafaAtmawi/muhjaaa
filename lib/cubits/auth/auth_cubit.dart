@@ -1,4 +1,4 @@
-import 'package:bloc/bloc.dart';
+import 'package:flutter_bloc/flutter_bloc.dart'; // CHANGED IMPORT
 import 'package:equatable/equatable.dart';
 import 'package:muhjaaa/models/user_model.dart';
 import 'package:muhjaaa/repositories/auth_repository.dart';
@@ -12,20 +12,10 @@ class AuthCubit extends Cubit<AuthState> {
     : _authRepository = authRepository,
       super(AuthInitial());
 
-  // Call this when the app starts to check if user is already logged in
-  // For now, we'll assume unauthenticated initially.
-  // In a real app, you'd check for a stored token.
   Future<void> checkAuthStatus() async {
     emit(AuthLoading());
-    // Simulate checking stored token
     await Future.delayed(const Duration(milliseconds: 500));
-    // If you had a method like _authRepository.getCurrentUser()
-    // final result = await _authRepository.getCurrentUser();
-    // result.fold(
-    //   (failure) => emit(Unauthenticated()),
-    //   (user) => emit(Authenticated(user)),
-    // );
-    emit(Unauthenticated()); // Default to unauthenticated for now
+    emit(Unauthenticated());
   }
 
   Future<void> login(String username, String password) async {
@@ -54,7 +44,7 @@ class AuthCubit extends Cubit<AuthState> {
     );
     result.fold(
       (failure) => emit(AuthFailure(failure.message)),
-      (user) => emit(Authenticated(user)), // Automatically log in after signup
+      (user) => emit(Authenticated(user)),
     );
   }
 

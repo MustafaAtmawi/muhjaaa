@@ -54,7 +54,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     'assets/images/Muhja_logo.svg',
                     height:
                         MediaQuery.of(context).size.height *
-                        0.15, // Adjusted from 0.25 for better balance
+                        0.25, // Adjusted from 0.25 for better balance
                   ),
                   const SizedBox(height: 10), // Adjusted spacing
                   const Text(
@@ -77,7 +77,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       width: 20,
                       height: 20,
                       colorFilter: const ColorFilter.mode(
-                        AppColors.lightGrey,
+                        AppColors.darkGreyText,
                         BlendMode.srcIn,
                       ),
                     ),
@@ -97,7 +97,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       width: 20,
                       height: 20,
                       colorFilter: const ColorFilter.mode(
-                        AppColors.lightGrey,
+                        AppColors.darkGreyText,
                         BlendMode.srcIn,
                       ),
                     ),
@@ -117,8 +117,8 @@ class _LoginScreenState extends State<LoginScreen> {
                         "نسيت كلمة المرور؟",
                         style: TextStyle(
                           fontFamily: 'Cairo',
-                          fontSize: 12.0,
-                          color: AppColors.mutedBlueGrey,
+                          fontSize: 14.0,
+                          color: AppColors.forgetPassword,
                           fontWeight: FontWeight.normal,
                         ),
                       ),
@@ -183,8 +183,8 @@ class _LoginScreenState extends State<LoginScreen> {
                         },
                         child: SvgPicture.asset(
                           'assets/icons/Google.svg',
-                          width: 40,
-                          height: 40,
+                          width: 55,
+                          height: 55,
                         ),
                       ),
                       const SizedBox(width: 25),
@@ -194,8 +194,8 @@ class _LoginScreenState extends State<LoginScreen> {
                         },
                         child: SvgPicture.asset(
                           'assets/icons/Facebook.svg',
-                          width: 40,
-                          height: 40,
+                          width: 55,
+                          height: 55,
                         ),
                       ),
                     ],
