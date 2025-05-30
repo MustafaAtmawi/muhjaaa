@@ -1,0 +1,31 @@
+import 'package:equatable/equatable.dart';
+
+class DoctorModel extends Equatable {
+  final String id;
+  final String name;
+  final String placeholderLetter;
+  final String? avatarUrl;
+  final bool isActive;
+
+  const DoctorModel({
+    required this.id,
+    required this.name,
+    required this.placeholderLetter,
+    this.avatarUrl,
+    required this.isActive,
+  });
+
+  // Example: Factory constructor from JSON
+  factory DoctorModel.fromJson(Map<String, dynamic> json) {
+    return DoctorModel(
+      id: json['id'] as String,
+      name: json['name'] as String,
+      placeholderLetter: json['placeholderLetter'] as String,
+      avatarUrl: json['avatarUrl'] as String?,
+      isActive: json['isActive'] as bool,
+    );
+  }
+
+  @override
+  List<Object?> get props => [id, name, placeholderLetter, avatarUrl, isActive];
+}

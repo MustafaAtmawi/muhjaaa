@@ -11,7 +11,7 @@ class ChatListItem extends StatelessWidget {
   final VoidCallback? onTap;
 
   const ChatListItem({
-    super.key,
+    super.key, // Use super.key
     required this.senderName,
     required this.senderRole,
     required this.lastMessage,
@@ -33,7 +33,7 @@ class ChatListItem extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 10.0),
           margin: const EdgeInsets.symmetric(vertical: 4.0),
           decoration: BoxDecoration(
-            color: AppColors.doctorChatItemBg, // UPDATED color here
+            color: AppColors.doctorChatItemBg,
             borderRadius: BorderRadius.circular(12.0),
           ),
           child: Row(
@@ -111,7 +111,10 @@ class ChatListItem extends StatelessWidget {
                       ),
                     ),
                   ] else ...[
-                    const SizedBox(height: 6 + 12 + 6),
+                    // Ensure consistent height even if badge is not present
+                    const SizedBox(
+                      height: 6 + 12 + 6 - 2,
+                    ), // Adjust if needed for perfect alignment
                   ],
                 ],
               ),

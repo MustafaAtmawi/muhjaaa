@@ -57,11 +57,19 @@ class _ChatListScreenState extends State<ChatListScreen> {
     },
   ];
 
+  // IMPORTANT: This value needs to be the exact, consistent height of your ChatListItem.
+  // Measure it carefully or ensure your ChatListItem widget enforces a fixed height.
+  // For example, if each ChatListItem is exactly 78 pixels tall:
+  // final double _chatListItemExtent = 78.0;
+
   @override
   Widget build(BuildContext context) {
-    // itemExtent has been removed as it seemed to negatively impact performance in this case.
-    // This might be due to estimated values not being perfectly accurate,
-    // or items not being as uniform in size as assumed.
+    // Determine a consistent height for ChatListItem.
+    // This might involve adjusting ChatListItem's internal layout (e.g., fixed heights, maxLines).
+    // For this example, let's assume you've determined it to be 80.0.
+    // You MUST verify this value for your actual ChatListItem widget.
+    const double chatListItemExtent =
+        80.0; // Example, replace with actual measured height
 
     return Scaffold(
       backgroundColor: AppColors.white,
@@ -154,13 +162,12 @@ class _ChatListScreenState extends State<ChatListScreen> {
             ),
           ),
           SizedBox(
-            height: 80,
+            height: 80, // Height for the horizontal list of active doctors
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
               itemCount: _activeDoctors.length,
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               reverse: true,
-              // itemExtent removed
               itemBuilder: (context, index) {
                 final doctor = _activeDoctors[index];
                 return ActiveDoctorAvatar(
@@ -186,7 +193,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
             child: ListView.builder(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               itemCount: _chatMessages.length,
-              // itemExtent removed
+              itemExtent: chatListItemExtent, // Using itemExtent
               itemBuilder: (context, index) {
                 final msg = _chatMessages[index];
                 return ChatListItem(
@@ -209,9 +216,6 @@ class _ChatListScreenState extends State<ChatListScreen> {
         child: FloatingActionButton(
           onPressed: () {
             print("Mama Muhja FAB tapped");
-            // If you still want to test the Icon version for performance:
-            // Temporarily use this:
-            // child: const Icon(Icons.chat, color: AppColors.primaryRed, size: 30),
           },
           backgroundColor: Colors.transparent,
           elevation: 0,

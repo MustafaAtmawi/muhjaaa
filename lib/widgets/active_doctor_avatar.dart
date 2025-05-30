@@ -2,13 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:muhjaaa/utils/app_colors.dart';
 
 class ActiveDoctorAvatar extends StatelessWidget {
-  // In the future, you'd pass a doctor model with name, imageURL, etc.
-  // final DoctorModel doctor;
   final VoidCallback? onTap;
-  final String placeholderLetter; // e.g., first letter of doctor's name
+  final String placeholderLetter;
 
   const ActiveDoctorAvatar({
-    super.key,
+    super.key, // Use super.key
     this.onTap,
     required this.placeholderLetter,
   });
@@ -37,7 +35,6 @@ class ActiveDoctorAvatar extends StatelessWidget {
               CircleAvatar(
                 radius: 30,
                 backgroundColor: AppColors.mutedBlueGrey.withOpacity(0.5),
-                // TODO: Replace with Image.network(doctor.imageUrl) when available
                 child: Text(
                   placeholderLetter,
                   style: const TextStyle(
@@ -50,8 +47,7 @@ class ActiveDoctorAvatar extends StatelessWidget {
               ),
               Positioned(
                 top: 0,
-                right:
-                    0, // For RTL, this will visually be top-left if avatar is on the right
+                right: 0,
                 child: Container(
                   width: 12,
                   height: 12,
