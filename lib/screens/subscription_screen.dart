@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_svg/flutter_svg.dart'; // Kept in case FeatureListItem or PlanSelectionCard uses SVGs
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:muhjaaa/cubits/subscription/subscription_cubit.dart';
 import 'package:muhjaaa/utils/app_colors.dart';
 import 'package:muhjaaa/widgets/feature_list_item.dart';
@@ -15,31 +15,285 @@ class SubscriptionScreen extends StatefulWidget {
 
 class _SubscriptionScreenState extends State<SubscriptionScreen> {
   String? _selectedPlanId;
-  bool _agreedToTerms = false;
+  bool _agreedToTermsCheckbox = false;
 
   @override
   void initState() {
     super.initState();
-    // Fetch subscription plans when the screen initializes
-    // Ensure SubscriptionCubit is provided above this widget in the tree
-    // For example, in your main.dart or a higher-level widget.
-    // If not, this line will throw an error.
-    // You might want to add a check or ensure it's always provided.
-    // Future.microtask(() { // Ensure context is available if called directly in initState
-    // context.read<SubscriptionCubit>().fetchSubscriptionPlans();
-    // });
-    // Or, if you are certain it's provided and context is safe to use:
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
-        // Check if the widget is still in the tree
         context.read<SubscriptionCubit>().fetchSubscriptionPlans();
       }
     });
   }
 
-  void _handleSubscription(String planId) {
+  void _actuallySubscribe(String planId) {
     const String mockPaymentToken = "mock_payment_token_12345";
     context.read<SubscriptionCubit>().subscribeToPlan(planId, mockPaymentToken);
+  }
+
+  void _showTermsAndConditionsSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (BuildContext sheetContext) {
+        return SingleChildScrollView(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(sheetContext).viewInsets.bottom,
+          ),
+          child: Container(
+            padding: const EdgeInsets.only(
+              top: 10,
+              bottom: 10,
+            ), // Reduced top/bottom overall padding
+            decoration: const BoxDecoration(
+              color: AppColors.white,
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(25.0),
+                topRight: Radius.circular(25.0),
+              ),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: <Widget>[
+                Container(
+                  // Draggable indicator
+                  width: 40,
+                  height: 5,
+                  margin: const EdgeInsets.only(bottom: 8.0),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+
+                // Stack for the Icon and "عودة" button
+                SizedBox(
+                  width: double.infinity,
+                  child: Stack(
+                    alignment: Alignment.topCenter,
+                    children: [
+                      // Layer 1: Red Circle Icon (will be behind "عودة")
+                      Padding(
+                        padding: const EdgeInsets.only(
+                          top: 5.0,
+                        ), // Adjust top padding to position circle
+                        child: const CircleAvatar(
+                          radius: 35,
+                          backgroundColor: AppColors.primaryRed,
+                          child: Icon(
+                            Icons.check,
+                            color: Colors.white,
+                            size: 40,
+                          ),
+                        ),
+                      ),
+
+                      // Layer 2: "عودة" button, positioned on top right (visual left in RTL)
+                      Positioned(
+                        top: 0,
+                        right:
+                            13, // For RTL, this means it aligns to the visual left edge of the Stack/Container
+                        // The parent Container's padding will give it distance from screen edge
+                        child: TextButton.icon(
+                          style: TextButton.styleFrom(
+                            padding: EdgeInsets.zero,
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),
+                          icon: const Icon(
+                            Icons.close,
+                            size: 20,
+                            color: AppColors.darkGreyText,
+                          ),
+                          label: const Text(
+                            "عودة",
+                            style: TextStyle(
+                              fontFamily: 'Cairo',
+                              fontSize: 14,
+                              color: AppColors.darkGreyText,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          onPressed: () {
+                            Navigator.of(sheetContext).pop();
+                          },
+                        ), // Close the sheet
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Title - Placed UNDER the Stack (which contains the icon)
+                Padding(
+                  // This padding makes the title and subsequent text more inset
+                  padding: const EdgeInsets.fromLTRB(
+                    24,
+                    5,
+                    24,
+                    0,
+                  ), // Top padding is from bottom of stack content
+                  child: const Text(
+                    'شروط وأحكام الاشتراك في مهجة',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontFamily: 'Cairo',
+                      fontSize: 17,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.darkGreyText,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+
+                // Inner padding for the main terms content to make it "ل جوا اكتر"
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 28.0,
+                  ), // Increased horizontal padding for inset
+                  child: Column(
+                    children: [
+                      const Text(
+                        'قبل ما تكمل اشتراكك, ضروري تقرأى هاي الشروط:',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontFamily: 'Cairo',
+                          fontSize: 13,
+                          color: AppColors.mutedBlueGrey,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      _buildTermItem(
+                        "الاشتراك المدفوع يوفر صلاحيات وخدمات خاصة داخل التطبيق.",
+                      ),
+                      _buildTermItem(
+                        "بياناتك بأمان وتستخدم لتحسين تجربتك فقط! اقرئى مراجعة سياسة الخصوصية.",
+                      ),
+                      _buildTermItem(
+                        "لا يوجد استرداد للمبلغ بعد الاشتراك, إلا بحالات خاصة مثل أعطال تقنية.",
+                      ),
+                      _buildTermItem(
+                        "الاستخدام شخصي فقط, لا يجوز مشاركة حسابك مع غيرك.",
+                      ),
+                      _buildTermItem(
+                        "أي استخدام مخالف من الممكن أن يتسبب في إلغاء اشتراكك.",
+                      ),
+                      const SizedBox(height: 20),
+                      const Text(
+                        'بالضغط على "أوافق", أنت توافقين على كل البنود.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontFamily: 'Cairo',
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.darkGreyText,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                // "أوافق" button - padding controlled by this Padding widget
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16.0,
+                  ), // This makes it fairly wide
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primaryRed,
+                      minimumSize: const Size(double.infinity, 50),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: const Text(
+                      'أوافق',
+                      style: TextStyle(
+                        fontFamily: 'Cairo',
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.white,
+                      ),
+                    ),
+                    onPressed: () {
+                      Navigator.of(sheetContext).pop();
+                      if (_selectedPlanId != null) {
+                        _actuallySubscribe(_selectedPlanId!);
+                      }
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildTermItem(String text) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        textDirection: TextDirection.rtl,
+        children: [
+          const Padding(
+            padding: EdgeInsets.only(top: 2.0, left: 6.0),
+            child: Text(
+              "•",
+              style: TextStyle(
+                color: AppColors.primaryRed,
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              text,
+              textAlign: TextAlign.right,
+              style: const TextStyle(
+                fontFamily: 'Cairo',
+                fontSize: 13,
+                color: AppColors.darkGreyText,
+                height: 1.4,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _handleMainSubscribeButton() {
+    if (_selectedPlanId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            "الرجاء اختيار خطة اشتراك أولاً.",
+            textAlign: TextAlign.right,
+          ),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+    if (!_agreedToTermsCheckbox) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            "الرجاء الموافقة على الشروط والأحكام.",
+            textAlign: TextAlign.right,
+          ),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+    _showTermsAndConditionsSheet();
   }
 
   @override
@@ -60,7 +314,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(
-                    "تم الاشتراك بنجاح في الخطة ${state.planId}!",
+                    "تم الاشتراك بنجاح!",
                     textAlign: TextAlign.right,
                   ),
                   backgroundColor: Colors.green,
@@ -78,9 +332,12 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
 
             if (state is SubscriptionPlansLoaded) {
               final plans = state.plans;
-              // Default to selecting the first plan if none is selected yet and plans are available
               if (_selectedPlanId == null && plans.isNotEmpty) {
-                _selectedPlanId = plans.first.id;
+                final yearlyPlan = plans.firstWhere(
+                  (p) => p.isYearly,
+                  orElse: () => plans.first,
+                );
+                _selectedPlanId = yearlyPlan.id;
               }
 
               return SingleChildScrollView(
@@ -92,28 +349,24 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      // MODIFIED: Top Bar
                       Row(
                         mainAxisAlignment: MainAxisAlignment.start,
                         children: [
                           IconButton(
                             onPressed: () => Navigator.pop(context),
-                            icon: Icon(
-                              Icons.arrow_back_ios_new, // Points left
+                            icon: const Icon(
+                              Icons.arrow_back_ios_new,
                               color: AppColors.darkGreyText,
                               size: 22,
                             ),
                           ),
-                          SizedBox(width: 25),
-                          // Blue square placeholder on the left
+                          const Spacer(),
                           SvgPicture.asset(
-                            // Using SVG for logo
                             'assets/images/Muhja_logo.svg',
-                            height:
-                                MediaQuery.of(context).size.height *
-                                0.25, // Adjusted from 0.25 for better balance
+                            height: MediaQuery.of(context).size.height * 0.12,
                           ),
-                          // Back button on the right
+                          const Spacer(),
+                          SizedBox(width: 40),
                         ],
                       ),
                       const SizedBox(height: 25),
@@ -187,49 +440,57 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                               const SizedBox(height: 16),
                         ),
                       const SizedBox(height: 24),
-                      // Terms and Conditions Row - Order remains Checkbox then Text for RTL consistency with image
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment
-                            .center, // To vertically align checkbox and text
+                        crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           Checkbox(
-                            value: _agreedToTerms,
+                            value: _agreedToTermsCheckbox,
                             onChanged: (bool? newValue) {
                               setState(() {
-                                _agreedToTerms = newValue ?? false;
+                                _agreedToTermsCheckbox = newValue ?? false;
                               });
                             },
                             activeColor: AppColors.primaryRed,
-                            visualDensity: VisualDensity
-                                .compact, // Added for tighter spacing
-                            materialTapTargetSize: MaterialTapTargetSize
-                                .shrinkWrap, // Added for tighter spacing
+                            visualDensity: VisualDensity.compact,
+                            materialTapTargetSize:
+                                MaterialTapTargetSize.shrinkWrap,
                           ),
-                          const SizedBox(
-                            width: 4,
-                          ), // Spacing between checkbox and text
+                          const SizedBox(width: 4),
                           GestureDetector(
                             onTap: () {
-                              // TODO: Implement navigation to Terms and Conditions screen or show a dialog
-                              print("Navigate to Terms and Conditions");
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text(
-                                    "سيتم عرض الشروط والأحكام هنا.",
-                                    textAlign: TextAlign.right,
+                              if (_selectedPlanId != null ||
+                                  (plans.isNotEmpty)) {
+                                _showTermsAndConditionsSheet();
+                              } else if (plans.isEmpty) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                      "لا توجد خطط متاحة حالياً لعرض الشروط.",
+                                      textAlign: TextAlign.right,
+                                    ),
+                                    backgroundColor: Colors.orange,
                                   ),
-                                ),
-                              );
+                                );
+                              } else {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                      "الرجاء الانتظار لتحميل الخطط أولاً.",
+                                      textAlign: TextAlign.right,
+                                    ),
+                                    backgroundColor: Colors.orange,
+                                  ),
+                                );
+                              }
                             },
                             child: const Text(
                               'أوافق على الشروط والأحكام',
                               style: TextStyle(
                                 fontFamily: 'Cairo',
                                 fontSize: 14,
-                                color: AppColors.primaryRed, // Red color
-                                decoration:
-                                    TextDecoration.underline, // Underlined
+                                color: AppColors.primaryRed,
+                                decoration: TextDecoration.underline,
                                 decorationColor: AppColors.primaryRed,
                               ),
                             ),
@@ -241,12 +502,9 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                         width: double.infinity,
                         height: 56,
                         child: ElevatedButton(
-                          onPressed:
-                              (_agreedToTerms &&
-                                  _selectedPlanId != null &&
-                                  state is! SubscriptionSubscribing)
-                              ? () => _handleSubscription(_selectedPlanId!)
-                              : null,
+                          onPressed: (state is SubscriptionSubscribing)
+                              ? null
+                              : _handleMainSubscribeButton,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.primaryRed,
                             disabledBackgroundColor: AppColors.lightGrey
@@ -272,7 +530,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                                     fontSize: 18,
                                     fontWeight: FontWeight.w600,
                                     color:
-                                        (_agreedToTerms &&
+                                        (_agreedToTermsCheckbox &&
                                             _selectedPlanId != null)
                                         ? AppColors.white
                                         : AppColors.white.withAlpha(
@@ -282,13 +540,12 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                                 ),
                         ),
                       ),
-                      const SizedBox(height: 20), // Bottom padding
+                      const SizedBox(height: 20),
                     ],
                   ),
                 ),
               );
             }
-            // Fallback for any other unhandled states or if state is SubscriptionFailure but not caught by listener for UI build
             return const Center(
               child: Text(
                 "حدث خطأ ما في تحميل الخطط أو حالة غير معروفة.",

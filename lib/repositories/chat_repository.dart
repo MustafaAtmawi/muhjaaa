@@ -6,16 +6,10 @@ import 'package:muhjaaa/widgets/message_bubble.dart'; // For SenderType
 import 'auth_repository.dart'; // For FutureEither type and Either definition
 
 class ChatRepository {
-  // In a real app, inject an HTTP client
-
   FutureEither<List<ChatPreviewModel>> getChatPreviews() async {
-    // TODO: Implement actual API call
-    print('ChatRepository: Fetching chat previews');
-    await Future.delayed(const Duration(seconds: 1)); // Simulate network delay
-
-    // Mock data can be const if all constructor args are const
+    // ... (no changes here, assuming it's not the issue for this screen)
+    await Future.delayed(const Duration(seconds: 1));
     final List<ChatPreviewModel> mockPreviews = [
-      // Changed to List<ChatPreviewModel> for clarity
       const ChatPreviewModel(
         id: 'chat1',
         senderName: 'د. كريم',
@@ -35,16 +29,13 @@ class ChatRepository {
         placeholderLetter: 'ع',
       ),
     ];
-    return Right(mockPreviews); // Return const Right if mockPreviews is const
+    return Right(mockPreviews);
   }
 
   FutureEither<List<DoctorModel>> getActiveDoctors() async {
-    // TODO: Implement actual API call
-    print('ChatRepository: Fetching active doctors');
+    // ... (no changes here)
     await Future.delayed(const Duration(seconds: 1));
-
     final List<DoctorModel> mockDoctors = [
-      // Changed to List<DoctorModel>
       const DoctorModel(
         id: 'doc1',
         name: 'د. أحمد',
@@ -58,84 +49,119 @@ class ChatRepository {
         isActive: true,
       ),
     ];
-    return Right(mockDoctors); // Return const Right if mockDoctors is const
+    return Right(mockDoctors);
   }
 
   FutureEither<List<MessageModel>> getMessages(String conversationId) async {
-    // TODO: Implement actual API call, using conversationId
-    print('ChatRepository: Fetching messages for conversation $conversationId');
-    await Future.delayed(const Duration(seconds: 1));
+    print(
+      "[ChatRepository] getMessages: Called for conversationId: $conversationId",
+    );
+    try {
+      print(
+        "[ChatRepository] getMessages: Simulating network delay for $conversationId...",
+      );
+      await Future.delayed(const Duration(seconds: 1));
+      print(
+        "[ChatRepository] getMessages: Network delay complete for $conversationId.",
+      );
+      const String currentUserId = "user123";
 
-    const String currentUserId = "user123";
-
-    if (conversationId == "ai_mama_chat") {
-      // List cannot be const because MessageModel instances use DateTime.now()
-      final List<MessageModel> mockMessages = [
-        MessageModel(
-          id: 'msg1_ai',
-          text:
-              'مرحباً ماما 👋 أنا مهجة مساعدتك الذكية! كيف يمكنني مساعدتك اليوم؟',
-          senderType: SenderType.aiMama,
-          senderId: 'ai_mama_id',
-          timestamp: DateTime.now().subtract(const Duration(minutes: 10)),
-          avatarAssetPath: 'assets/images/AI_mama.png',
+      if (conversationId == "ai_mama_chat") {
+        print(
+          "[ChatRepository] getMessages: Matched conversationId 'ai_mama_chat'. Creating mock messages.",
+        );
+        final List<MessageModel> mockMessages = [
+          MessageModel(
+            id: 'msg1_ai',
+            text:
+                'مرحباً ماما 👋 أنا مهجة مساعدتك الذكية! كيف يمكنني مساعدتك اليوم؟',
+            senderType: SenderType.aiMama,
+            senderId: 'ai_mama_id',
+            timestamp: DateTime.now().subtract(const Duration(minutes: 10)),
+            avatarAssetPath:
+                'assets/images/Ai_Mama.svg', // Ensure this path is correct
+          ),
+          MessageModel(
+            id: 'msg2_ai',
+            text:
+                'مرحباً مهجة، ابني عمره 7 شهور وبصحى كتير بالليل، تعبت جداً 😥',
+            senderType: SenderType.me,
+            senderId: currentUserId,
+            timestamp: DateTime.now().subtract(const Duration(minutes: 8)),
+            avatarInitial: 'أ',
+          ),
+          MessageModel(
+            id: 'msg3_ai',
+            text:
+                'شكراً ❤️ هي بعض النصائح تساعد على نوم أعمق:\n• حاولي، تعملي روتين نوم ثابت (حمام دافئ، تهدئة الغرفة، تهدئة).\n• خلي وقت القيلولة لا يتجاوز الـ3 ساعات.\n• لا ترضعيه لينام حتى في آخر رضعة قبل النوم بـ20 دقيقة.\n• إذا صحي، لا تحمليه فوراً، جربي تطبطبي عليه وهو بسريره.',
+            senderType: SenderType.aiMama,
+            senderId: 'ai_mama_id',
+            timestamp: DateTime.now().subtract(const Duration(minutes: 5)),
+            avatarAssetPath:
+                'assets/images/Ai_Mama.svg', // Ensure this path is correct
+          ),
+        ];
+        print(
+          "[ChatRepository] getMessages: Returning Right with ${mockMessages.length} mock messages for 'ai_mama_chat'.",
+        );
+        return Right(mockMessages);
+      } else if (conversationId == "chat1") {
+        print(
+          "[ChatRepository] getMessages: Matched conversationId 'chat1'. Creating mock messages.",
+        );
+        final List<MessageModel> mockMessages = [
+          MessageModel(
+            id: 'msg1_doc',
+            text: 'مرحباً، كيف حال طفلك اليوم؟',
+            senderType: SenderType.otherParty,
+            senderId: 'doc_karim_id',
+            timestamp: DateTime.now().subtract(const Duration(hours: 1)),
+            avatarInitial: 'ك',
+          ),
+          MessageModel(
+            id: 'msg2_doc',
+            text: 'الحمد لله، لكن ما زال يعاني من بعض المغص.',
+            senderType: SenderType.me,
+            senderId: currentUserId,
+            timestamp: DateTime.now().subtract(const Duration(minutes: 30)),
+            avatarInitial: 'أ',
+          ),
+        ];
+        print(
+          "[ChatRepository] getMessages: Returning Right with ${mockMessages.length} mock messages for 'chat1'.",
+        );
+        return Right(mockMessages);
+      } else if (conversationId == "chat2") {
+        print(
+          "[ChatRepository] getMessages: Matched conversationId 'chat2'. Returning Right with empty list.",
+        );
+        return const Right(<MessageModel>[]);
+      }
+      print(
+        "[ChatRepository] getMessages: ConversationId '$conversationId' not found. Returning Left(Failure).",
+      );
+      return const Left(Failure("Conversation not found", statusCode: 404));
+    } catch (e, stackTrace) {
+      print(
+        "[ChatRepository] getMessages: CRITICAL ERROR in getMessages for $conversationId: $e",
+      );
+      print("[ChatRepository] getMessages: StackTrace: $stackTrace");
+      return Left(
+        Failure(
+          "Critical error in repository getMessages: ${e.toString()}",
+          statusCode: 500,
         ),
-        MessageModel(
-          id: 'msg2_ai',
-          text: 'مرحباً مهجة، ابني عمره 7 شهور وبصحى كتير بالليل، تعبت جداً 😥',
-          senderType: SenderType.me,
-          senderId: currentUserId,
-          timestamp: DateTime.now().subtract(const Duration(minutes: 8)),
-          avatarInitial: 'أ',
-        ),
-        MessageModel(
-          id: 'msg3_ai',
-          text:
-              'شكراً ❤️ هي بعض النصائح تساعد على نوم أعمق:\n• حاولي، تعملي روتين نوم ثابت (حمام دافئ، تهدئة الغرفة، تهدئة).\n• خلي وقت القيلولة لا يتجاوز الـ3 ساعات.\n• لا ترضعيه لينام حتى في آخر رضعة قبل النوم بـ20 دقيقة.\n• إذا صحي، لا تحمليه فوراً، جربي تطبطبي عليه وهو بسريره.',
-          senderType: SenderType.aiMama,
-          senderId: 'ai_mama_id',
-          timestamp: DateTime.now().subtract(const Duration(minutes: 5)),
-          avatarAssetPath: 'assets/images/AI_mama.png',
-        ),
-      ];
-      return Right(mockMessages);
-    } else if (conversationId == "chat1") {
-      final List<MessageModel> mockMessages = [
-        // List cannot be const
-        MessageModel(
-          id: 'msg1_doc',
-          text: 'مرحباً، كيف حال طفلك اليوم؟',
-          senderType: SenderType.otherParty,
-          senderId: 'doc_karim_id',
-          timestamp: DateTime.now().subtract(const Duration(hours: 1)),
-          avatarInitial: 'ك',
-        ),
-        MessageModel(
-          id: 'msg2_doc',
-          text: 'الحمد لله، لكن ما زال يعاني من بعض المغص.',
-          senderType: SenderType.me,
-          senderId: currentUserId,
-          timestamp: DateTime.now().subtract(const Duration(minutes: 30)),
-          avatarInitial: 'أ',
-        ),
-      ];
-      return Right(mockMessages);
+      );
     }
-    return const Left(Failure("Conversation not found", statusCode: 404));
   }
 
   FutureEither<MessageModel> sendMessage(
     String conversationId,
     String text,
   ) async {
-    // TODO: Implement actual API call
-    print(
-      'ChatRepository: Sending message "$text" to conversation $conversationId',
-    );
+    // ... (sendMessage logic can also have prints if needed later)
     await Future.delayed(const Duration(milliseconds: 500));
-
     const String currentUserId = "user123";
-    // Cannot be const because of DateTime.now()
     final MessageModel sentMessage = MessageModel(
       id: "msg-${DateTime.now().millisecondsSinceEpoch}",
       text: text,

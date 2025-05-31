@@ -79,7 +79,7 @@ class _SignupScreenState extends State<SignupScreen> {
                   const SizedBox(height: 20),
                   SvgPicture.asset(
                     'assets/images/Muhja_logo.svg',
-                    height: MediaQuery.of(context).size.height * 0.25,
+                    height: MediaQuery.of(context).size.height * 0.23,
                   ),
                   const SizedBox(height: 10),
                   const Text(

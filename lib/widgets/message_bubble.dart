@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:muhjaaa/utils/app_colors.dart';
 
-// Define SenderType enum here
+// DEFINED SenderType enum here
 enum SenderType { me, otherParty, aiMama }
 
 class MessageBubble extends StatelessWidget {
   final String text;
-  final SenderType senderType;
+  final SenderType senderType; // Now correctly typed
   final String? avatarInitial;
   final String? avatarAssetPath;
 
@@ -27,88 +28,101 @@ class MessageBubble extends StatelessWidget {
     MainAxisAlignment rowMainAxisAlignment;
     Widget? currentAvatarWidget;
 
+    // Avatar logic
+    if (avatarAssetPath != null && avatarAssetPath!.isNotEmpty) {
+      Widget avatarImage;
+      if (avatarAssetPath!.toLowerCase().endsWith('.svg')) {
+        avatarImage = SvgPicture.asset(
+          avatarAssetPath!,
+          width: 32,
+          height: 32,
+          fit: BoxFit.cover,
+          placeholderBuilder: (BuildContext context) =>
+              const Icon(Icons.person, size: 16, color: AppColors.lightGrey),
+        );
+      } else {
+        avatarImage = Image.asset(
+          avatarAssetPath!,
+          width: 32,
+          height: 32,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) {
+            return const Icon(
+              Icons.person,
+              size: 16,
+              color: AppColors.lightGrey,
+            );
+          },
+        );
+      }
+      currentAvatarWidget = Padding(
+        padding: EdgeInsets.all(20),
+        child: CircleAvatar(
+          radius: 16,
+          backgroundColor: Colors.transparent,
+          child: ClipOval(child: avatarImage),
+        ),
+      );
+    } else if (avatarInitial != null && avatarInitial!.isNotEmpty) {
+      Color avatarBgColor = AppColors.mutedBlueGrey.withAlpha(
+        (0.7 * 255).round(),
+      );
+      // This is where the error in the screenshot occurred.
+      // Now SenderType.me will be correctly recognized.
+      if (senderType == SenderType.me) {
+        // No error here now
+        avatarBgColor = AppColors.primaryOrange.withAlpha((0.7 * 255).round());
+      }
+
+      currentAvatarWidget = Padding(
+        padding: EdgeInsets.only(
+          left: isSenderMe ? 0 : 10,
+          right: !isSenderMe ? 20 : 10,
+          top: 10,
+          bottom: 10,
+        ),
+        child: CircleAvatar(
+          radius: 16,
+          backgroundColor: avatarBgColor,
+          child: Text(
+            avatarInitial!,
+            style: const TextStyle(
+              color: AppColors.white,
+              fontSize: 12,
+              fontFamily: 'Cairo',
+            ),
+          ),
+        ),
+      );
+    }
+
     if (senderType == SenderType.me) {
       bubbleColor = AppColors.primaryRed;
       textColor = AppColors.white;
       rowMainAxisAlignment = MainAxisAlignment.end;
-      if (avatarInitial != null) {
-        currentAvatarWidget = Padding(
-          padding: const EdgeInsets.only(left: 8.0),
-          child: CircleAvatar(
-            radius: 16,
-            backgroundColor: AppColors.primaryOrange.withAlpha(
-              (0.7 * 255).round(),
-            ),
-            child: Text(
-              avatarInitial!,
-              style: const TextStyle(
-                color: AppColors.white,
-                fontSize: 12,
-                fontFamily: 'Cairo',
-              ),
-            ),
-          ),
-        );
-      }
     } else if (senderType == SenderType.aiMama) {
       bubbleColor = AppColors.aiMessageBubbleBg;
       textColor = AppColors.darkGreyText;
       rowMainAxisAlignment = MainAxisAlignment.start;
-      if (avatarAssetPath != null) {
-        currentAvatarWidget = Padding(
-          padding: const EdgeInsets.only(right: 8.0),
-          child: CircleAvatar(
-            radius: 16,
-            backgroundColor: Colors.transparent,
-            child: ClipOval(
-              child: Image.asset(
-                avatarAssetPath!,
-                width: 32,
-                height: 32,
-                fit: BoxFit.cover,
-              ),
-            ),
-          ),
-        );
-      }
     } else {
-      // SenderType.otherParty
+      // SenderType.otherParty (Doctor)
       bubbleColor = AppColors.userMessageBg;
       textColor = AppColors.darkGreyText;
       rowMainAxisAlignment = MainAxisAlignment.start;
-      if (avatarInitial != null) {
-        currentAvatarWidget = Padding(
-          padding: const EdgeInsets.only(right: 8.0),
-          child: CircleAvatar(
-            radius: 16,
-            backgroundColor: AppColors.mutedBlueGrey.withAlpha(
-              (0.7 * 255).round(),
-            ),
-            child: Text(
-              avatarInitial!,
-              style: const TextStyle(
-                color: AppColors.white,
-                fontSize: 12,
-                fontFamily: 'Cairo',
-              ),
-            ),
-          ),
-        );
-      }
     }
 
     final BorderRadius borderRadius = isSenderMe
         ? const BorderRadius.only(
             topLeft: Radius.circular(16),
+            bottomLeft: Radius.circular(4),
+            topRight: Radius.circular(16),
+            bottomRight: Radius.circular(16),
+          )
+        : const BorderRadius.only(
+            topLeft: Radius.circular(16),
             bottomLeft: Radius.circular(16),
             topRight: Radius.circular(16),
             bottomRight: Radius.circular(4),
-          )
-        : const BorderRadius.only(
-            topLeft: Radius.circular(4),
-            bottomLeft: Radius.circular(16),
-            topRight: Radius.circular(16),
-            bottomRight: Radius.circular(16),
           );
 
     List<String> lines = text.split('\n');
@@ -124,11 +138,7 @@ class MessageBubble extends StatelessWidget {
             children: [
               if (isBulletPoint)
                 Padding(
-                  padding: const EdgeInsets.only(
-                    left: 4.0,
-                    right: 0,
-                    top: 4.0,
-                  ), // For RTL, bullet is left of text line in bubble
+                  padding: const EdgeInsets.only(right: 0, left: 4.0, top: 4.5),
                   child: Icon(
                     Icons.circle,
                     size: 6,

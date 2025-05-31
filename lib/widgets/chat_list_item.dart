@@ -8,6 +8,7 @@ class ChatListItem extends StatelessWidget {
   final String timestamp;
   final int unreadCount;
   final String placeholderLetter;
+  final String? avatarUrl; // Parameter for avatar URL
   final VoidCallback? onTap;
 
   const ChatListItem({
@@ -18,107 +19,168 @@ class ChatListItem extends StatelessWidget {
     required this.timestamp,
     required this.unreadCount,
     required this.placeholderLetter,
+    this.avatarUrl, // Added 'avatarUrl' to the constructor
     this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        borderRadius: BorderRadius.all(Radius.circular(12.0)),
-      ),
-      child: GestureDetector(
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 10.0),
-          margin: const EdgeInsets.symmetric(vertical: 4.0),
-          decoration: BoxDecoration(
-            color: AppColors.doctorChatItemBg,
-            borderRadius: BorderRadius.circular(12.0),
-          ),
-          child: Row(
-            children: [
-              CircleAvatar(
-                radius: 28,
-                backgroundColor: AppColors.mutedBlueGrey.withAlpha(
-                  (0.7 * 255).round(),
-                ), // CORRECTED
-                child: Text(
-                  placeholderLetter,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    color: AppColors.white,
-                    fontFamily: 'Cairo',
-                    fontWeight: FontWeight.bold,
+    Widget avatarDisplay;
+    if (avatarUrl != null && avatarUrl!.isNotEmpty) {
+      avatarDisplay = ClipOval(
+        child: Image.network(
+          avatarUrl!,
+          width: 52,
+          height: 52,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) {
+            return CircleAvatar(
+              radius: 26,
+              backgroundColor: AppColors.mutedBlueGrey.withAlpha(
+                (0.7 * 255).round(),
+              ),
+              child: Text(
+                placeholderLetter.isNotEmpty
+                    ? placeholderLetter[0].toUpperCase()
+                    : 'S',
+                style: const TextStyle(
+                  fontSize: 18,
+                  color: AppColors.white,
+                  fontFamily: 'Cairo',
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            );
+          },
+          loadingBuilder:
+              (
+                BuildContext context,
+                Widget child,
+                ImageChunkEvent? loadingProgress,
+              ) {
+                if (loadingProgress == null) return child;
+                return CircleAvatar(
+                  radius: 26,
+                  backgroundColor: AppColors.mutedBlueGrey.withAlpha(
+                    (0.3 * 255).round(),
                   ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '$senderName - $senderRole',
-                      style: const TextStyle(
-                        fontFamily: 'Cairo',
-                        fontWeight: FontWeight.bold,
-                        fontSize: 15,
-                        color: AppColors.darkGreyText,
-                      ),
+                  child: Center(
+                    child: CircularProgressIndicator(
+                      value: loadingProgress.expectedTotalBytes != null
+                          ? loadingProgress.cumulativeBytesLoaded /
+                                loadingProgress.expectedTotalBytes!
+                          : null,
+                      strokeWidth: 2.0,
+                      color: AppColors.primaryRed,
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      lastMessage,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontFamily: 'Cairo',
-                        fontSize: 13,
-                        color: AppColors.mutedBlueGrey,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 10),
-              Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.end,
+                  ),
+                );
+              },
+        ),
+      );
+    } else {
+      avatarDisplay = CircleAvatar(
+        radius: 26,
+        backgroundColor: AppColors.mutedBlueGrey.withAlpha((0.7 * 255).round()),
+        child: Text(
+          placeholderLetter.isNotEmpty
+              ? placeholderLetter[0].toUpperCase()
+              : 'S',
+          style: const TextStyle(
+            fontSize: 18,
+            color: AppColors.white,
+            fontFamily: 'Cairo',
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      );
+    }
+
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12.0),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 12.0),
+        decoration: BoxDecoration(
+          color: AppColors
+              .doctorChatItemBg, // Changed background color as requested
+          borderRadius: BorderRadius.circular(12.0),
+        ),
+        child: Row(
+          children: [
+            avatarDisplay,
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    timestamp,
+                    '$senderName - $senderRole',
                     style: const TextStyle(
                       fontFamily: 'Cairo',
-                      fontSize: 11,
-                      color: AppColors.lightGrey,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                      color: AppColors.darkGreyText,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    lastMessage,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontFamily: 'Cairo',
+                      fontSize: 13,
+                      color: AppColors.mutedBlueGrey,
                     ),
                   ),
-                  if (unreadCount > 0) ...[
-                    const SizedBox(height: 6),
-                    Container(
-                      padding: const EdgeInsets.all(6),
-                      decoration: const BoxDecoration(
-                        color: AppColors.primaryRed,
-                        shape: BoxShape.circle,
-                      ),
-                      child: Text(
-                        '$unreadCount',
-                        style: const TextStyle(
-                          fontFamily: 'Cairo',
-                          color: AppColors.white,
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ] else ...[
-                    const SizedBox(height: 6 + 12 + 6 - 2),
-                  ],
                 ],
               ),
-            ],
-          ),
+            ),
+            const SizedBox(width: 10),
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  timestamp,
+                  style: const TextStyle(
+                    fontFamily: 'Cairo',
+                    fontSize: 11,
+                    color: AppColors.lightGrey,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                if (unreadCount > 0)
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 7,
+                      vertical: 3,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryRed,
+                      borderRadius: BorderRadius.circular(10.0),
+                    ),
+                    child: Text(
+                      '$unreadCount',
+                      style: const TextStyle(
+                        fontFamily: 'Cairo',
+                        color: AppColors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  )
+                else
+                  // Placeholder to maintain alignment if no unread count badge
+                  SizedBox(
+                    height: (10 + 3 + 3),
+                  ), // Approximate height of the badge
+              ],
+            ),
+          ],
         ),
       ),
     );

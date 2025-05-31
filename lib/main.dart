@@ -9,20 +9,14 @@ import 'package:muhjaaa/repositories/chat_repository.dart';
 import 'package:muhjaaa/repositories/subscription_repository.dart';
 import 'package:muhjaaa/screens/ai_mama_chat_screen.dart';
 import 'package:muhjaaa/screens/chat_list_screen.dart';
-import 'package:muhjaaa/screens/conversation_screen.dart';
 import 'package:muhjaaa/screens/login_screen.dart';
 import 'package:muhjaaa/screens/signup_screen.dart';
 import 'package:muhjaaa/screens/subscription_screen.dart';
 import 'package:muhjaaa/utils/app_colors.dart';
 
-// A simple navigator key
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() {
-  // You can initialize things like Firebase, Sentry, etc. here if needed
-  // WidgetsFlutterBinding.ensureInitialized(); // If you need to call native code before runApp
-
-  // Instantiate repositories
   final authRepository = AuthRepository();
   final chatRepository = ChatRepository();
   final subscriptionRepository = SubscriptionRepository();
@@ -50,46 +44,42 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // MultiRepositoryProvider makes repositories available to all Blocs/Cubits
-    // that might need them.
+    print("[MyApp] Building MultiRepositoryProvider and MultiBlocProvider");
     return MultiRepositoryProvider(
       providers: [
         RepositoryProvider.value(value: authRepository),
         RepositoryProvider.value(value: chatRepository),
         RepositoryProvider.value(value: subscriptionRepository),
       ],
-      // MultiBlocProvider provides Cubits to the widget tree.
       child: MultiBlocProvider(
         providers: [
           BlocProvider<AuthCubit>(
-            create: (context) =>
-                AuthCubit(authRepository: context.read<AuthRepository>())
-                  ..checkAuthStatus(), // Check auth status when app starts
+            create: (context) {
+              print("[MainBlocProviders] Creating AuthCubit");
+              return AuthCubit(authRepository: context.read<AuthRepository>())
+                ..checkAuthStatus();
+            },
           ),
           BlocProvider<ChatListCubit>(
-            create: (context) =>
-                ChatListCubit(chatRepository: context.read<ChatRepository>()),
-            // ..fetchChatListData(), // Optionally fetch data immediately or on screen init
+            create: (context) {
+              print("[MainBlocProviders] Creating ChatListCubit");
+              return ChatListCubit(
+                chatRepository: context.read<ChatRepository>(),
+              );
+            },
           ),
           BlocProvider<SubscriptionCubit>(
-            create: (context) => SubscriptionCubit(
-              subscriptionRepository: context.read<SubscriptionRepository>(),
-            ),
-            // ..fetchSubscriptionPlans(), // Optionally fetch data immediately
+            create: (context) {
+              print("[MainBlocProviders] Creating SubscriptionCubit");
+              return SubscriptionCubit(
+                subscriptionRepository: context.read<SubscriptionRepository>(),
+              );
+            },
           ),
-          // ConversationCubit is typically provided closer to the ConversationScreen
-          // or created dynamically with arguments (like conversationId) if needed
-          // For a global AI Mama chat, you could provide it here:
-          // BlocProvider<ConversationCubit>(
-          //   create: (context) => ConversationCubit(
-          //     chatRepository: context.read<ChatRepository>(),
-          //     conversationId: "ai_mama_chat", // Specific ID for AI Mama chat
-          //   )..fetchMessages(),
-          // ),
         ],
         child: MaterialApp(
           title: 'Muhjaaa',
-          navigatorKey: navigatorKey, // For potential global navigation
+          navigatorKey: navigatorKey,
           debugShowCheckedModeBanner: false,
           theme: ThemeData(
             primaryColor: AppColors.primaryRed,
@@ -160,16 +150,16 @@ class MyApp extends StatelessWidget {
               child: child!,
             );
           },
-          // The home screen will now be determined by the AuthState
           home: BlocBuilder<AuthCubit, AuthState>(
             builder: (context, state) {
               if (state is Authenticated) {
-                return const LoginScreen(); // Authenticated users go to ChatListScreen
+                // Per your original code, though this might be LoginScreen() or a typo for ChatListScreen()
+                return const LoginScreen();
               }
               if (state is Unauthenticated || state is AuthFailure) {
-                return const ChatListScreen(); // Unauthenticated or failed auth users go to LoginScreen
+                // Per your original code
+                return const ChatListScreen();
               }
-              // For AuthInitial or AuthLoading, show a loading indicator
               return const Scaffold(
                 backgroundColor: AppColors.screenBackground,
                 body: Center(
@@ -178,35 +168,43 @@ class MyApp extends StatelessWidget {
               );
             },
           ),
-
-          // Define routes for navigation
           routes: {
             '/login': (context) => const LoginScreen(),
             '/signup': (context) => const SignupScreen(),
             '/chat_list': (context) => const ChatListScreen(),
-            '/ai_mama_chat': (context) => BlocProvider(
-              // Provide ConversationCubit specifically for this route
-              create: (blocContext) => ConversationCubit(
-                chatRepository: blocContext.read<ChatRepository>(),
-                conversationId: "ai_mama_chat", // Specific ID
-              )..fetchMessages(), // Fetch messages when screen is opened
-              child: const AiMamaChatScreen(),
-            ),
+            '/ai_mama_chat': (routeBuildContext) {
+              print("--- Navigating to /ai_mama_chat route ---");
+              return BlocProvider<ConversationCubit>(
+                create: (cubitContext) {
+                  print(
+                    "[Route:/ai_mama_chat] Inside BlocProvider.create for ConversationCubit",
+                  );
+                  try {
+                    print(
+                      "[Route:/ai_mama_chat] Attempting to read ChatRepository...",
+                    );
+                    final chatRepo = cubitContext.read<ChatRepository>();
+                    print(
+                      "[Route:/ai_mama_chat] ChatRepository found: $chatRepo. Creating ConversationCubit.",
+                    );
+                    return ConversationCubit(
+                      chatRepository: chatRepo,
+                      conversationId: "ai_mama_chat",
+                    )..fetchMessages();
+                  } catch (e, s) {
+                    print(
+                      "[Route:/ai_mama_chat] ERROR reading ChatRepository or creating ConversationCubit: $e",
+                    );
+                    print(s);
+                    // rethrow; // You might want to rethrow or handle this gracefully
+                    // For now, let's try to return a dummy or throw to see the error if it happens here
+                    throw Exception("Failed to create ConversationCubit: $e");
+                  }
+                },
+                child: const AiMamaChatScreen(),
+              );
+            },
             '/subscription': (context) => const SubscriptionScreen(),
-            // Example route for a doctor conversation, requires conversationId
-            // You would navigate to this with arguments
-            // '/conversation': (context) {
-            //   final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
-            //   final conversationId = args['conversationId'] as String;
-            //   final doctorName = args['doctorName'] as String; // Or pass full doctor model
-            //   return BlocProvider(
-            //     create: (blocContext) => ConversationCubit(
-            //       chatRepository: blocContext.read<ChatRepository>(),
-            //       conversationId: conversationId,
-            //     )..fetchMessages(),
-            //     child: ConversationScreen(doctorName: doctorName, conversationId: conversationId),
-            //   );
-            // },
           },
         ),
       ),

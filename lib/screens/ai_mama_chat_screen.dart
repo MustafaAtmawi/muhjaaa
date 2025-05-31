@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/flutter_svg.dart'; // Ensure this is imported
 import 'package:muhjaaa/cubits/chat/conversation_cubit.dart';
 import 'package:muhjaaa/models/message_model.dart';
 import 'package:muhjaaa/utils/app_colors.dart';
@@ -15,15 +16,13 @@ class AiMamaChatScreen extends StatefulWidget {
 class _AiMamaChatScreenState extends State<AiMamaChatScreen> {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
-  bool _isSpeaking = false; // Local UI state for the speaker icon
+  bool _isSpeaking = false;
 
   @override
   void initState() {
     super.initState();
-    // Messages are fetched by the Cubit when it's created for this route in main.dart
-    // Add listener to scroll to bottom when new messages arrive or keyboard appears
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _scrollToBottom();
+      if (mounted) _scrollToBottom(animate: false);
     });
   }
 
@@ -34,14 +33,27 @@ class _AiMamaChatScreenState extends State<AiMamaChatScreen> {
     super.dispose();
   }
 
-  void _scrollToBottom() {
-    if (_scrollController.hasClients) {
-      _scrollController.animateTo(
-        _scrollController.position.maxScrollExtent,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeOut,
-      );
+  void _scrollToBottom({bool animate = true}) {
+    if (!_scrollController.hasClients) return;
+    if (!_scrollController.position.hasContentDimensions ||
+        _scrollController.position.maxScrollExtent == 0.0) {
+      return;
     }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted &&
+          _scrollController.hasClients &&
+          _scrollController.position.hasContentDimensions) {
+        if (animate) {
+          _scrollController.animateTo(
+            _scrollController.position.maxScrollExtent,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeOut,
+          );
+        } else {
+          _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
+        }
+      }
+    });
   }
 
   void _sendMessage() {
@@ -57,6 +69,7 @@ class _AiMamaChatScreenState extends State<AiMamaChatScreen> {
     return Scaffold(
       backgroundColor: AppColors.white,
       appBar: PreferredSize(
+        // AppBar remains the same as your last version of AiMamaChatScreen
         preferredSize: const Size.fromHeight(60.0),
         child: AppBar(
           backgroundColor: AppColors.white,
@@ -73,6 +86,7 @@ class _AiMamaChatScreenState extends State<AiMamaChatScreen> {
           ),
           title: Row(
             mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const Text(
                 "ماما مهجة",
@@ -84,10 +98,22 @@ class _AiMamaChatScreenState extends State<AiMamaChatScreen> {
                 ),
               ),
               const SizedBox(width: 8),
-              const CircleAvatar(
+              CircleAvatar(
                 radius: 16,
                 backgroundColor: Colors.transparent,
-                backgroundImage: AssetImage('assets/images/AI_mama.png'),
+                child: ClipOval(
+                  child: SvgPicture.asset(
+                    'assets/images/Ai_Mama.svg', //
+                    width: 32,
+                    height: 32,
+                    fit: BoxFit.cover,
+                    placeholderBuilder: (BuildContext context) => const Icon(
+                      Icons.person,
+                      size: 16,
+                      color: AppColors.lightGrey,
+                    ),
+                  ),
+                ),
               ),
             ],
           ),
@@ -103,7 +129,6 @@ class _AiMamaChatScreenState extends State<AiMamaChatScreen> {
               ),
               onPressed: () {
                 setState(() => _isSpeaking = !_isSpeaking);
-                // TODO: Implement text-to-speech toggle logic
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text(
@@ -121,7 +146,6 @@ class _AiMamaChatScreenState extends State<AiMamaChatScreen> {
                 size: 24,
               ),
               onPressed: () {
-                // TODO: Implement share/upload action
                 print("Share/Upload button tapped");
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
@@ -137,42 +161,49 @@ class _AiMamaChatScreenState extends State<AiMamaChatScreen> {
           ],
         ),
       ),
-      body: BlocConsumer<ConversationCubit, ConversationState>(
-        listener: (context, state) {
-          if (state is ConversationError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message, textAlign: TextAlign.right),
-                backgroundColor: Colors.red,
-              ),
-            );
-          }
-          if (state is ConversationLoaded || state is ConversationSending) {
-            WidgetsBinding.instance.addPostFrameCallback(
-              (_) => _scrollToBottom(),
-            );
-          }
-        },
-        builder: (context, state) {
-          List<MessageModel> messages = [];
-          if (state is ConversationLoaded) {
-            messages = state.messages;
-          } else if (state is ConversationSending) {
-            messages = state.messages;
-          } else if (state is ConversationError) {
-            messages = state.previousMessages;
-          }
+      body: Column(
+        // Wrapped body content in a Column to place input bar at bottom
+        children: [
+          Expanded(
+            child: BlocConsumer<ConversationCubit, ConversationState>(
+              listener: (context, state) {
+                if (state is ConversationError) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(state.message, textAlign: TextAlign.right),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+                if (state is ConversationLoaded ||
+                    state is ConversationSending) {
+                  if ((state is ConversationLoaded &&
+                          state.messages.isNotEmpty) ||
+                      (state is ConversationSending &&
+                          state.messages.isNotEmpty)) {
+                    _scrollToBottom();
+                  }
+                }
+              },
+              builder: (context, state) {
+                List<MessageModel> messages = [];
+                if (state is ConversationLoaded) {
+                  messages = state.messages;
+                } else if (state is ConversationSending) {
+                  messages = state.messages;
+                } else if (state is ConversationError) {
+                  messages = state.previousMessages;
+                }
 
-          if (state is ConversationLoading && messages.isEmpty) {
-            return const Center(
-              child: CircularProgressIndicator(color: AppColors.primaryRed),
-            );
-          }
+                if (state is ConversationLoading && messages.isEmpty) {
+                  return const Center(
+                    child: CircularProgressIndicator(
+                      color: AppColors.primaryRed,
+                    ),
+                  );
+                }
 
-          return Column(
-            children: [
-              Expanded(
-                child: messages.isEmpty && state is! ConversationLoading
+                return messages.isEmpty && state is! ConversationLoading
                     ? const Center(
                         child: Text(
                           "ابدئي المحادثة مع ماما مهجة!",
@@ -197,137 +228,160 @@ class _AiMamaChatScreenState extends State<AiMamaChatScreen> {
                             avatarAssetPath: message.avatarAssetPath,
                           );
                         },
-                      ),
-              ),
-              if (state is ConversationSending &&
-                  messages.isNotEmpty &&
-                  messages.last.senderType == SenderType.me)
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 8.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      SizedBox(
-                        width: 12,
-                        height: 12,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: AppColors.primaryRed,
-                        ),
-                      ),
-                      SizedBox(width: 8),
-                      Text(
-                        "ماما مهجة تكتب...",
-                        style: TextStyle(
-                          fontFamily: 'Cairo',
-                          color: AppColors.lightGrey,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 8.0,
-                  vertical: 8.0,
-                ),
-                decoration: const BoxDecoration(
-                  color: AppColors.messageInputBg,
-                ),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Material(
+                      );
+              },
+            ),
+          ),
+          if (context.watch<ConversationCubit>().state is ConversationSending &&
+              (context.watch<ConversationCubit>().state as ConversationSending)
+                  .messages
+                  .isNotEmpty &&
+              (context.watch<ConversationCubit>().state as ConversationSending)
+                      .messages
+                      .last
+                      .senderType ==
+                  SenderType.me) // Condition for "ماما مهجة تكتب..."
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 8.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SizedBox(
+                    width: 12,
+                    height: 12,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
                       color: AppColors.primaryRed,
-                      borderRadius: BorderRadius.circular(22),
-                      child: InkWell(
-                        onTap: _sendMessage,
-                        borderRadius: BorderRadius.circular(22),
-                        child: const Padding(
-                          padding: EdgeInsets.all(10.0),
-                          child: Icon(
-                            Icons.send,
-                            color: AppColors.white,
-                            size: 20,
-                            textDirection: TextDirection.ltr,
-                          ),
-                        ),
-                      ),
                     ),
-                    const SizedBox(width: 8),
-                    InkWell(
-                      onTap: () {
-                        /* TODO: Implement attachment logic */
-                      },
-                      child: const Padding(
-                        padding: EdgeInsets.all(8.0),
-                        child: Icon(
-                          Icons.attach_file,
-                          color: AppColors.mutedBlueGrey,
-                          size: 24,
-                        ),
-                      ),
+                  ),
+                  SizedBox(width: 8),
+                  Text(
+                    "ماما مهجة تكتب...",
+                    style: TextStyle(
+                      fontFamily: 'Cairo',
+                      color: AppColors.lightGrey,
+                      fontSize: 12,
                     ),
-                    const SizedBox(width: 0),
-                    InkWell(
-                      onTap: () {
-                        /* TODO: Implement camera logic */
-                      },
-                      child: const Padding(
-                        padding: EdgeInsets.all(8.0),
-                        child: Icon(
-                          Icons.camera_alt_outlined,
-                          color: AppColors.mutedBlueGrey,
-                          size: 24,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
+                  ),
+                ],
+              ),
+            ),
+          // Copied Text Input Section from ConversationScreen.dart
+          Material(
+            elevation: 8.0,
+            color: Colors.white,
+            child: Padding(
+              padding: EdgeInsets.only(
+                left: 12.0,
+                right: 12.0,
+                top: 8.0,
+                bottom: 8.0 + MediaQuery.of(context).padding.bottom,
+              ),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: AppColors.searchBarBg, //
+                  borderRadius: BorderRadius.circular(30.0), //
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 8.0), //
+                child: Row(
+                  children: [
+                    const SizedBox(width: 8), //
                     Expanded(
                       child: TextField(
-                        controller: _messageController,
-                        textAlign: TextAlign.right,
+                        controller:
+                            _messageController, // References _messageController from _AiMamaChatScreenState
+                        textAlign: TextAlign.right, //
+                        decoration: const InputDecoration(
+                          hintText:
+                              'اكتب رسالة...', // Hint text from ConversationScreen
+                          hintStyle: TextStyle(
+                            fontFamily: 'Cairo', //
+                            fontSize: 15, //
+                            color: AppColors.lightGrey, //
+                          ),
+                          border: InputBorder.none, //
+                          contentPadding: EdgeInsets.symmetric(vertical: 10), //
+                        ),
                         style: const TextStyle(
-                          fontFamily: 'Cairo',
-                          fontSize: 14,
-                          color: AppColors.darkGreyText,
+                          fontFamily: 'Cairo', //
+                          fontSize: 15, //
+                          color: AppColors.darkGreyText, //
                         ),
-                        decoration: InputDecoration(
-                          hintText: "اكتب رسالتك هنا",
-                          hintStyle: const TextStyle(
-                            fontFamily: 'Cairo',
-                            color: AppColors.messageInputHintText,
-                            fontSize: 14,
-                          ),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(25.0),
-                            borderSide: BorderSide.none,
-                          ),
-                          filled: true,
-                          fillColor: AppColors.white,
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16.0,
-                            vertical: 10.0,
-                          ),
-                        ),
-                        onSubmitted: (_) => _sendMessage(),
-                        textInputAction: TextInputAction.send,
-                        minLines: 1,
-                        maxLines: 4,
+                        minLines: 1, //
+                        maxLines: 4, //
+                        textInputAction: TextInputAction.send, //
+                        onSubmitted: (_) =>
+                            _sendMessage(), // References _sendMessage from _AiMamaChatScreenState
                       ),
+                    ),
+                    const SizedBox(width: 4), //
+                    IconButton(
+                      icon: SvgPicture.asset(
+                        'assets/icons/Insert_File.svg', // Path from ConversationScreen - WARNING: This asset is missing
+                        width: 26,
+                        height: 26,
+                        colorFilter: ColorFilter.mode(
+                          AppColors.darkGreyText.withOpacity(0.7),
+                          BlendMode.srcIn,
+                        ),
+                        errorBuilder: (context, error, stackTrace) =>
+                            const Icon(
+                              // Fallback from ConversationScreen
+                              Icons.attach_file,
+                              color: AppColors.darkGreyText,
+                            ),
+                      ),
+                      onPressed: () {
+                        /* TODO: Implement attachment logic */ //
+                        print("Attach file tapped"); //
+                      },
+                      padding: EdgeInsets.zero, //
+                      constraints: const BoxConstraints(), //
+                    ),
+                    IconButton(
+                      icon: SvgPicture.asset(
+                        'assets/icons/Insert_Image.svg', // Path from ConversationScreen - WARNING: This asset is missing
+                        width: 26,
+                        height: 26,
+                        colorFilter: ColorFilter.mode(
+                          AppColors.darkGreyText.withOpacity(0.7),
+                          BlendMode.srcIn,
+                        ),
+                        errorBuilder: (context, error, stackTrace) =>
+                            const Icon(
+                              // Fallback from ConversationScreen
+                              Icons.image_outlined,
+                              color: AppColors.darkGreyText,
+                            ),
+                      ),
+                      onPressed: () {
+                        /* TODO: Implement image insertion logic */ //
+                        print("Insert image tapped"); //
+                      },
+                      padding: EdgeInsets.zero, //
+                      constraints: const BoxConstraints(), //
+                    ),
+                    IconButton(
+                      icon: SvgPicture.asset(
+                        'assets/icons/Send_message.svg', // Path from ConversationScreen, this asset exists
+                        errorBuilder: (context, error, stackTrace) =>
+                            const Icon(
+                              Icons.send,
+                              color: AppColors.primaryRed,
+                            ), // Fallback from ConversationScreen
+                      ),
+                      onPressed:
+                          _sendMessage, // References _sendMessage from _AiMamaChatScreenState
+                      padding: EdgeInsets.zero, //
+                      constraints: const BoxConstraints(), //
                     ),
                   ],
                 ),
               ),
-            ],
-          );
-        },
+            ),
+          ),
+        ],
       ),
-      // The BottomNavigationBar is not typically part of a detail chat screen.
-      // It's usually on top-level screens like ChatListScreen.
-      // If you intend for it to be here, ensure _bottomNavIndex is managed appropriately.
-      // For now, I'll remove it from this specific chat screen.
     );
   }
 }

@@ -3,8 +3,9 @@ import 'package:muhjaaa/utils/app_colors.dart';
 
 class CustomTextFormField extends StatefulWidget {
   final TextEditingController controller;
-  final String labelText;
-  final Widget prefixIcon;
+  final String? labelText; // Made labelText optional
+  final String? hintText; // Added hintText
+  final Widget? prefixIcon; // Made prefixIcon optional
   final Widget? suffixIcon;
   final String? Function(String?)? validator;
   final bool obscureText;
@@ -17,8 +18,9 @@ class CustomTextFormField extends StatefulWidget {
   const CustomTextFormField({
     super.key,
     required this.controller,
-    required this.labelText,
-    required this.prefixIcon,
+    this.labelText, // Now optional
+    this.hintText, // New
+    this.prefixIcon, // Now optional
     this.suffixIcon,
     this.validator,
     this.obscureText = false,
@@ -40,9 +42,7 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
   @override
   void initState() {
     super.initState();
-    // Listen to focus changes
     _focusNode.addListener(_onFocusChange);
-    // Listen to text changes to validate live if focused
     widget.controller.addListener(_onTextChanged);
   }
 
@@ -51,36 +51,26 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
     _focusNode.removeListener(_onFocusChange);
     _focusNode.dispose();
     widget.controller.removeListener(_onTextChanged);
-    // Note: Don't dispose the controller here if it's passed from parent
     super.dispose();
   }
 
   void _onFocusChange() {
     if (!_focusNode.hasFocus) {
-      // When field loses focus, clear its specific live error message.
-      // Form-level validation on submit will still catch it if it's an error.
       if (mounted && _currentErrorText != null) {
-        setState(() {
-          _currentErrorText = null;
-        });
+        // setState(() {
+        //   _currentErrorText = null; // Option: Clear live error on blur
+        // });
       }
-      // We can also choose to validate one last time on blur:
-      // if (widget.validator != null) {
-      //   final error = widget.validator!(widget.controller.text);
-      //   if (mounted && _currentErrorText != error) { // Update only if error state changes
-      //     setState(() {
-      //       _currentErrorText = error; // This would make errors persist on blur
-      //     });
-      //   }
-      // }
     } else {
-      // When field gains focus, validate immediately
       _validate();
+    }
+    if (mounted) {
+      // Ensure floating label color updates on focus change
+      setState(() {});
     }
   }
 
   void _onTextChanged() {
-    // Only validate and show errors if the field currently has focus
     if (_focusNode.hasFocus) {
       _validate();
     }
@@ -90,7 +80,6 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
     if (widget.validator != null) {
       final error = widget.validator!(widget.controller.text);
       if (mounted && _currentErrorText != error) {
-        // Update only if error state changes
         setState(() {
           _currentErrorText = error;
         });
@@ -106,70 +95,95 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
       textAlign: widget.textAlign,
       obscureText: widget.obscureText,
       keyboardType: widget.keyboardType,
-      validator: widget.validator, // Validator for form submission
+      // Use validator for form-level validation, errorText for live feedback
+      validator: widget.validator,
       onTap: widget.onTap,
       readOnly: widget.readOnly,
       maxLines: widget.maxLines,
       autovalidateMode:
-          AutovalidateMode.disabled, // We handle live error via errorText
+          AutovalidateMode.onUserInteraction, // Validate on interaction
       style: const TextStyle(
         fontFamily: 'Cairo',
-        fontSize: 16.0,
+        fontSize: 15.0, // Matched to design
         color: AppColors.darkGreyText,
       ),
       decoration: InputDecoration(
-        labelText: widget.labelText,
+        labelText: widget.labelText, // Use labelText if provided
+        hintText: widget.hintText, // Use hintText if provided
         labelStyle: const TextStyle(
+          // Style for floating label
           fontFamily: 'Cairo',
-          fontSize: 16.0,
+          fontSize: 15.0,
+          color: AppColors.lightGrey,
+        ),
+        hintStyle: const TextStyle(
+          // Style for hint text when field is empty
+          fontFamily: 'Cairo',
+          fontSize: 15.0,
           color: AppColors.lightGrey,
         ),
         floatingLabelStyle: TextStyle(
+          // Style for label when it floats (field has focus or text)
           fontFamily: 'Cairo',
           color: _focusNode.hasFocus
               ? AppColors.primaryRed
               : AppColors.lightGrey,
-          fontSize: 18.0,
+          fontSize: 17.0, // Slightly larger when floating
         ),
-        errorText: _currentErrorText, // Display our managed error text
-        prefixIcon: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12.0),
-          child: widget.prefixIcon,
+        // errorText: _currentErrorText, // Using autovalidate mode handles this better
+        errorStyle: const TextStyle(
+          fontFamily: 'Cairo',
+          color: Colors.redAccent,
+          fontSize: 12,
         ),
-        prefixIconConstraints: const BoxConstraints(
-          minWidth: 24,
-          minHeight: 24,
-        ),
+        prefixIcon: widget.prefixIcon != null
+            ? Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                child: widget.prefixIcon,
+              )
+            : null, // Only add padding if prefixIcon exists
+        prefixIconConstraints: widget.prefixIcon != null
+            ? const BoxConstraints(minWidth: 24, minHeight: 24)
+            : const BoxConstraints(
+                minWidth: 0,
+                minHeight: 0,
+              ), // No constraints if no icon
         suffixIcon: widget.suffixIcon,
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12.0),
-          borderSide: const BorderSide(color: AppColors.lightGrey, width: 1.0),
+          borderRadius: BorderRadius.circular(12.0), // Matched to design
+          borderSide: BorderSide(
+            color: AppColors.lightGrey.withOpacity(0.5),
+            width: 1.0,
+          ),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12.0),
-          borderSide: const BorderSide(color: AppColors.lightGrey, width: 1.0),
+          borderSide: BorderSide(
+            color: AppColors.lightGrey.withOpacity(0.5),
+            width: 1.0,
+          ),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12.0),
           borderSide: const BorderSide(color: AppColors.primaryRed, width: 1.5),
         ),
         errorBorder: OutlineInputBorder(
-          // Border when errorText is not null and field is not focused
           borderRadius: BorderRadius.circular(12.0),
-          borderSide: const BorderSide(color: Colors.red, width: 1.0),
+          borderSide: const BorderSide(color: Colors.redAccent, width: 1.0),
         ),
         focusedErrorBorder: OutlineInputBorder(
-          // Border when errorText is not null and field is focused
           borderRadius: BorderRadius.circular(12.0),
-          borderSide: const BorderSide(color: Colors.red, width: 1.5),
+          borderSide: const BorderSide(color: Colors.redAccent, width: 1.5),
         ),
+        filled: true, // Added for background color
+        fillColor: AppColors.white, // Background color for text field
         contentPadding: const EdgeInsets.symmetric(
-          vertical: 14.0,
+          vertical: 16.0, // Adjusted padding
           horizontal: 16.0,
         ),
-        filled: true,
-        fillColor: AppColors.white,
-        floatingLabelBehavior: FloatingLabelBehavior.auto,
+        floatingLabelBehavior: widget.labelText != null
+            ? FloatingLabelBehavior.auto
+            : FloatingLabelBehavior.never,
       ),
     );
   }

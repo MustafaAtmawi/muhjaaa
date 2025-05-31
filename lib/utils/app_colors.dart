@@ -24,4 +24,11 @@ class AppColors {
   static const Color aiMessageBubbleBg = Color(
     0xFFE0F7FA,
   ); // Soft light cyan-blue
+
+  static const Color cardBackground = Color(0xFFFFFFFF);
+  static const Color chipBackground = Color(
+    0xFFFEEBEA,
+  ); // Light pink for the chip
+  static const Color chipText = primaryRed;
+  static const Color unselectedButtonBorder = Color(0xFFE0E0E0);
 }

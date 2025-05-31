@@ -4,60 +4,107 @@ import 'package:muhjaaa/utils/app_colors.dart';
 class ActiveDoctorAvatar extends StatelessWidget {
   final VoidCallback? onTap;
   final String placeholderLetter;
+  final String? avatarUrl;
+  final String? name; // Parameter for doctor's name
 
   const ActiveDoctorAvatar({
-    super.key, // Use super.key
+    super.key,
     this.onTap,
     required this.placeholderLetter,
+    this.avatarUrl,
+    this.name, // Make sure 'name' is included in the constructor
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadius.circular(30),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            spreadRadius: 1,
-            blurRadius: 6,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: GestureDetector(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8.0),
-          child: Stack(
-            children: [
-              CircleAvatar(
-                radius: 30,
-                backgroundColor: AppColors.mutedBlueGrey.withOpacity(0.5),
-                child: Text(
-                  placeholderLetter,
-                  style: const TextStyle(
-                    fontSize: 20,
-                    color: AppColors.white,
-                    fontFamily: 'Cairo',
-                    fontWeight: FontWeight.bold,
-                  ),
+    Widget avatarChild;
+    if (avatarUrl != null && avatarUrl!.isNotEmpty) {
+      avatarChild = ClipOval(
+        child: Image.network(
+          avatarUrl!,
+          width: 50, // Diameter of the avatar circle
+          height: 50,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) {
+            return Center(
+              child: Text(
+                placeholderLetter.isNotEmpty
+                    ? placeholderLetter[0].toUpperCase()
+                    : 'D',
+                style: const TextStyle(
+                  fontSize: 20,
+                  color: AppColors.white,
+                  fontFamily: 'Cairo',
+                  fontWeight: FontWeight.bold,
                 ),
               ),
+            );
+          },
+          loadingBuilder:
+              (
+                BuildContext context,
+                Widget child,
+                ImageChunkEvent? loadingProgress,
+              ) {
+                if (loadingProgress == null) return child;
+                return Center(
+                  child: CircularProgressIndicator(
+                    value: loadingProgress.expectedTotalBytes != null
+                        ? loadingProgress.cumulativeBytesLoaded /
+                              loadingProgress.expectedTotalBytes!
+                        : null,
+                    strokeWidth: 2.0,
+                    color: AppColors.primaryRed,
+                  ),
+                );
+              },
+        ),
+      );
+    } else {
+      avatarChild = Center(
+        child: Text(
+          placeholderLetter.isNotEmpty
+              ? placeholderLetter[0].toUpperCase()
+              : 'D',
+          style: const TextStyle(
+            fontSize: 20,
+            color: AppColors.white,
+            fontFamily: 'Cairo',
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      );
+    }
+
+    return GestureDetector(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: 6.0,
+        ), // Spacing between avatars
+        child: SizedBox(
+          // To ensure the Stack has a defined size for positioning the dot
+          width: 56,
+          height: 56,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              CircleAvatar(
+                radius: 25, // Main avatar size (50 diameter)
+                backgroundColor: AppColors.mutedBlueGrey.withOpacity(0.5),
+                child: avatarChild,
+              ),
               Positioned(
-                top: 0,
-                right: 0,
+                // Green active dot
+                top: 15,
+                right: 5,
                 child: Container(
                   width: 12,
                   height: 12,
                   decoration: BoxDecoration(
                     color: AppColors.positiveGreen,
                     shape: BoxShape.circle,
-                    border: Border.all(
-                      color: AppColors.screenBackground,
-                      width: 2,
-                    ),
+                    border: Border.all(color: AppColors.white, width: 2),
                   ),
                 ),
               ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/flutter_svg.dart'; // Import flutter_svg
 import 'package:muhjaaa/cubits/chat/chat_list_cubit.dart';
 import 'package:muhjaaa/cubits/chat/conversation_cubit.dart';
 import 'package:muhjaaa/models/chat_preview_model.dart';
@@ -9,6 +10,7 @@ import 'package:muhjaaa/screens/conversation_screen.dart';
 import 'package:muhjaaa/utils/app_colors.dart';
 import 'package:muhjaaa/widgets/active_doctor_avatar.dart';
 import 'package:muhjaaa/widgets/chat_list_item.dart';
+import 'package:muhjaaa/widgets/app_drawer.dart'; // Import the AppDrawer
 
 class ChatListScreen extends StatefulWidget {
   const ChatListScreen({super.key});
@@ -18,14 +20,15 @@ class ChatListScreen extends StatefulWidget {
 }
 
 class _ChatListScreenState extends State<ChatListScreen> {
-  int _bottomNavIndex = 2;
+  int _bottomNavIndex = 2; // Default to Home/ChatList
+  final GlobalKey<ScaffoldState> _scaffoldKey =
+      GlobalKey<ScaffoldState>(); // Add a ScaffoldKey
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
-        print("ChatListScreen initState: Calling fetchChatListData");
         context.read<ChatListCubit>().fetchChatListData();
       }
     });
@@ -56,42 +59,67 @@ class _ChatListScreenState extends State<ChatListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    print("ChatListScreen: Build method called");
     return Scaffold(
+      key: _scaffoldKey, // Assign the key to the Scaffold
       backgroundColor: AppColors.white,
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(60.0),
         child: AppBar(
           backgroundColor: AppColors.white,
-          elevation: 0,
+          elevation: 0.5,
           automaticallyImplyLeading: false,
           titleSpacing: 0,
-          title: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Spacer(),
-                const Text(
-                  "المحادثات",
-                  style: TextStyle(
-                    fontFamily: 'Cairo',
-                    color: AppColors.darkGreyText,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 20,
-                  ),
-                ),
-                const Spacer(),
-              ],
+          leading: IconButton(
+            icon: SvgPicture.asset(
+              'assets/icons/Right.svg',
+              width: 22,
+              height: 22,
+              colorFilter: ColorFilter.mode(
+                AppColors.darkGreyText.withOpacity(0.7),
+                BlendMode.srcIn,
+              ),
             ),
+            onPressed: () {
+              // TODO: Implement action for right arrow (e.g., context.pop() if it's not a main screen)
+              print("AppBar leading (Right.svg) icon pressed");
+            },
           ),
+          title: const Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              Text(
+                "المحادثات",
+                style: TextStyle(
+                  fontFamily: 'Cairo',
+                  color: AppColors.darkGreyText,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 20,
+                ),
+              ),
+            ],
+          ),
+          centerTitle:
+              false, // Title is aligned to the end (right in RTL) due to Row properties
+          actions: [
+            IconButton(
+              icon: const Icon(
+                Icons.menu,
+                color: AppColors.darkGreyText,
+                size: 28,
+              ),
+              onPressed: () {
+                _scaffoldKey.currentState
+                    ?.openEndDrawer(); // Open the drawer from the right
+              },
+            ),
+            const SizedBox(width: 8),
+          ],
         ),
       ),
+      endDrawer:
+          AppDrawer(), // Set AppDrawer to endDrawer to appear from the right
       body: BlocConsumer<ChatListCubit, ChatListState>(
         listener: (context, state) {
-          print(
-            "ChatListScreen Listener: Received state - ${state.runtimeType}",
-          );
           if (state is ChatListFailure) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
@@ -102,13 +130,8 @@ class _ChatListScreenState extends State<ChatListScreen> {
           }
         },
         builder: (context, state) {
-          print(
-            "ChatListScreen Builder: Building for state - ${state.runtimeType}",
-          );
-
           if (state is ChatListLoading || state is ChatListInitial) {
-            print("ChatListScreen Builder: Showing Loading UI");
-            return Center(
+            return const Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -117,14 +140,14 @@ class _ChatListScreenState extends State<ChatListScreen> {
                     width: 36,
                     height: 36,
                     child: CircularProgressIndicator(
-                      valueColor: const AlwaysStoppedAnimation<Color>(
+                      valueColor: AlwaysStoppedAnimation<Color>(
                         AppColors.primaryRed,
                       ),
                       strokeWidth: 3.5,
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  const Text(
+                  SizedBox(height: 16),
+                  Text(
                     "جاري تحميل المحادثات...",
                     style: TextStyle(
                       color: AppColors.darkGreyText,
@@ -137,9 +160,6 @@ class _ChatListScreenState extends State<ChatListScreen> {
               ),
             );
           } else if (state is ChatListLoaded) {
-            print(
-              "ChatListScreen Builder: Showing Loaded UI with ${state.chatPreviews.length} previews, ${state.activeDoctors.length} doctors",
-            );
             final List<DoctorModel> activeDoctors = state.activeDoctors;
             final List<ChatPreviewModel> chatMessages = state.chatPreviews;
 
@@ -149,7 +169,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
                 Padding(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 16.0,
-                    vertical: 8.0,
+                    vertical: 12.0,
                   ),
                   child: TextField(
                     textAlign: TextAlign.right,
@@ -165,19 +185,22 @@ class _ChatListScreenState extends State<ChatListScreen> {
                         color: AppColors.lightGrey,
                         fontSize: 14,
                       ),
-                      prefixIcon: const Icon(
-                        Icons.search,
-                        color: AppColors.lightGrey,
-                        size: 22,
+                      prefixIcon: const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 12.0),
+                        child: Icon(
+                          Icons.search,
+                          color: AppColors.lightGrey,
+                          size: 22,
+                        ),
                       ),
                       filled: true,
                       fillColor: AppColors.searchBarBg,
                       contentPadding: const EdgeInsets.symmetric(
-                        vertical: 0,
+                        vertical: 10,
                         horizontal: 20,
                       ),
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(25.0),
+                        borderRadius: BorderRadius.circular(10.0),
                         borderSide: BorderSide.none,
                       ),
                     ),
@@ -187,8 +210,9 @@ class _ChatListScreenState extends State<ChatListScreen> {
                   const Padding(
                     padding: EdgeInsets.only(
                       right: 16.0,
-                      top: 10.0,
-                      bottom: 10.0,
+                      left: 16.0,
+                      top: 8.0,
+                      bottom: 12.0,
                     ),
                     child: Text(
                       "نشط الآن",
@@ -201,15 +225,18 @@ class _ChatListScreenState extends State<ChatListScreen> {
                     ),
                   ),
                   SizedBox(
-                    height: 80,
+                    height:
+                        85, // Consider if this needs to be dynamic or check constraints
                     child: ListView.builder(
                       scrollDirection: Axis.horizontal,
                       itemCount: activeDoctors.length,
-                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                      padding: const EdgeInsets.symmetric(horizontal: 12.0),
                       reverse: true,
                       itemBuilder: (context, index) {
                         final doctor = activeDoctors[index];
                         return ActiveDoctorAvatar(
+                          name: doctor.name,
+                          avatarUrl: doctor.avatarUrl,
                           placeholderLetter: doctor.placeholderLetter,
                           onTap: () {
                             final String doctorConversationId =
@@ -239,7 +266,12 @@ class _ChatListScreenState extends State<ChatListScreen> {
                   ),
                 ],
                 const Padding(
-                  padding: EdgeInsets.only(right: 16.0, top: 16.0, bottom: 8.0),
+                  padding: EdgeInsets.only(
+                    right: 16.0,
+                    left: 16.0,
+                    top: 20.0,
+                    bottom: 8.0,
+                  ),
                   child: Text(
                     "الرسائل",
                     style: TextStyle(
@@ -263,8 +295,11 @@ class _ChatListScreenState extends State<ChatListScreen> {
                             textAlign: TextAlign.center,
                           ),
                         )
-                      : ListView.builder(
-                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      : ListView.separated(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16.0,
+                            vertical: 8.0,
+                          ),
                           itemCount: chatMessages.length,
                           itemBuilder: (context, index) {
                             final msgPreview = chatMessages[index];
@@ -275,18 +310,18 @@ class _ChatListScreenState extends State<ChatListScreen> {
                               timestamp: msgPreview.timestamp,
                               unreadCount: msgPreview.unreadCount,
                               placeholderLetter: msgPreview.placeholderLetter,
+                              avatarUrl: msgPreview.avatarUrl,
                               onTap: () =>
                                   _navigateToDoctorChat(context, msgPreview),
                             );
                           },
+                          separatorBuilder: (context, index) =>
+                              const SizedBox(height: 10),
                         ),
                 ),
               ],
             );
           } else if (state is ChatListFailure) {
-            print(
-              "ChatListScreen Builder: Showing Failure UI - ${state.message}",
-            );
             return Center(
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
@@ -302,9 +337,6 @@ class _ChatListScreenState extends State<ChatListScreen> {
               ),
             );
           } else {
-            print(
-              "ChatListScreen Builder: Showing Unknown State UI for state - ${state.runtimeType}",
-            );
             return const Center(
               child: Text(
                 "حالة غير معروفة أو واجهة غير محددة لهذه الحالة.",
@@ -321,25 +353,33 @@ class _ChatListScreenState extends State<ChatListScreen> {
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
       floatingActionButton: Padding(
-        padding: const EdgeInsets.only(bottom: 60.0),
-        child: FloatingActionButton(
-          onPressed: () {
-            Navigator.pushNamed(context, '/ai_mama_chat');
-          },
-          backgroundColor: AppColors
-              .primaryRed, // Changed from transparent to see the button
-          elevation: 4, // Added some elevation
-          // child: Image.asset(
-          //   'assets/images/AI_mama.png', // This was causing the error
-          //   width: 60,
-          //   height: 60,
-          //   fit: BoxFit.contain,
-          // ),
-          child: const Icon(
-            Icons.chat_bubble_outline,
-            color: Colors.white,
-            size: 30,
-          ), // Placeholder Icon
+        padding: const EdgeInsets.only(bottom: 70.0, left: 16.0),
+        child: SizedBox(
+          width: 65,
+          height: 65,
+          child: FloatingActionButton(
+            onPressed: () {
+              Navigator.pushNamed(context, '/ai_mama_chat');
+            },
+            backgroundColor: Colors.white,
+            elevation: 4,
+            child: Padding(
+              padding: const EdgeInsets.all(2.0),
+              child: ClipOval(
+                child: SvgPicture.asset(
+                  'assets/images/Subscription_mama.svg',
+                  fit: BoxFit.cover,
+                  width: 61,
+                  height: 61,
+                  placeholderBuilder: (BuildContext context) => const Icon(
+                    Icons.support_agent,
+                    color: AppColors.primaryRed,
+                    size: 30,
+                  ),
+                ),
+              ),
+            ),
+          ),
         ),
       ),
       bottomNavigationBar: BottomNavigationBar(
@@ -347,10 +387,11 @@ class _ChatListScreenState extends State<ChatListScreen> {
         onTap: (index) {
           if (index == 2) {
             if (_bottomNavIndex != index) {
-              setState(() {
-                _bottomNavIndex = index;
-              });
+              // context.read<ChatListCubit>().fetchChatListData(); // Optionally refresh
             }
+            setState(() {
+              _bottomNavIndex = index;
+            });
             return;
           }
           setState(() {
@@ -360,15 +401,19 @@ class _ChatListScreenState extends State<ChatListScreen> {
           switch (index) {
             case 0:
               screenName = "الملف الشخصي (Profile)";
+              // Navigator.pushNamed(context, '/my_account'); // Example navigation
               break;
             case 1:
               screenName = "المتجر (Store)";
+              // Navigator.pushNamed(context, '/store'); // Example navigation
               break;
             case 3:
               screenName = "مقالات (Articles)";
+              // Navigator.pushNamed(context, '/articles'); // Example navigation
               break;
             case 4:
               screenName = "المزيد (More)";
+              // Navigator.pushNamed(context, '/more'); // Example navigation
               break;
           }
           if (screenName.isNotEmpty) {
@@ -376,7 +421,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(
-                  "تم تحديد $screenName. سيتم تنفيذ الانتقال لهذه الشاشة لاحقاً.",
+                  "التنقل إلى $screenName غير مبرمج بعد.",
                   textAlign: TextAlign.right,
                   style: const TextStyle(fontFamily: 'Cairo'),
                 ),
@@ -388,7 +433,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
         type: BottomNavigationBarType.fixed,
         backgroundColor: AppColors.white,
         selectedItemColor: AppColors.primaryRed,
-        unselectedItemColor: AppColors.lightGrey,
+        unselectedItemColor: AppColors.darkGreyText,
         selectedLabelStyle: const TextStyle(
           fontFamily: 'Cairo',
           fontSize: 10,
@@ -398,30 +443,56 @@ class _ChatListScreenState extends State<ChatListScreen> {
           fontFamily: 'Cairo',
           fontSize: 10,
         ),
-        items: const [
+        items: [
           BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline),
-            activeIcon: Icon(Icons.person),
+            icon: SvgPicture.asset(
+              'assets/icons/Person.svg',
+              width: 24,
+              height: 24,
+              colorFilter: ColorFilter.mode(
+                _bottomNavIndex == 0
+                    ? AppColors.primaryRed
+                    : AppColors.darkGreyText,
+                BlendMode.srcIn,
+              ),
+            ),
             label: "الملف الشخصي",
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.store_outlined),
-            activeIcon: Icon(Icons.store),
+            icon: Icon(
+              Icons.shopping_bag_outlined,
+              color: _bottomNavIndex == 1
+                  ? AppColors.primaryRed
+                  : AppColors.darkGreyText,
+            ),
             label: "المتجر",
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.home_outlined),
-            activeIcon: Icon(Icons.home),
-            label: "الرئيسية",
+            icon: Icon(
+              Icons
+                  .home_outlined, // Consider Icons.chat_bubble_outline if this is purely for chats
+              color: _bottomNavIndex == 2
+                  ? AppColors.primaryRed
+                  : AppColors.darkGreyText,
+            ),
+            label: "الرئيسية", // Or "المحادثات" if more appropriate
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.article_outlined),
-            activeIcon: Icon(Icons.article),
+            icon: Icon(
+              Icons.menu_book_outlined,
+              color: _bottomNavIndex == 3
+                  ? AppColors.primaryRed
+                  : AppColors.darkGreyText,
+            ),
             label: "مقالات",
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.apps_outlined),
-            activeIcon: Icon(Icons.apps),
+            icon: Icon(
+              Icons.apps_outlined,
+              color: _bottomNavIndex == 4
+                  ? AppColors.primaryRed
+                  : AppColors.darkGreyText,
+            ),
             label: "المزيد",
           ),
         ],
