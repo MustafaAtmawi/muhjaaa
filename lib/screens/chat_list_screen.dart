@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:muhjaaa/cubits/chat/chat_list_cubit.dart';
-import 'package:muhjaaa/cubits/chat/conversation_cubit.dart'; // ADDED
-import 'package:muhjaaa/models/chat_preview_model.dart'; // Ensure this path is correct and model is defined
-import 'package:muhjaaa/models/doctor_model.dart'; // Ensure this path is correct
-import 'package:muhjaaa/repositories/chat_repository.dart'; // ADDED for context.read
-// import 'package:muhjaaa/screens/ai_mama_chat_screen.dart'; // Using named route instead
+import 'package:muhjaaa/cubits/chat/conversation_cubit.dart';
+import 'package:muhjaaa/models/chat_preview_model.dart';
+import 'package:muhjaaa/models/doctor_model.dart';
+import 'package:muhjaaa/repositories/chat_repository.dart';
 import 'package:muhjaaa/screens/conversation_screen.dart';
 import 'package:muhjaaa/utils/app_colors.dart';
 import 'package:muhjaaa/widgets/active_doctor_avatar.dart';
@@ -24,7 +23,12 @@ class _ChatListScreenState extends State<ChatListScreen> {
   @override
   void initState() {
     super.initState();
-    context.read<ChatListCubit>().fetchChatListData();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        print("ChatListScreen initState: Calling fetchChatListData");
+        context.read<ChatListCubit>().fetchChatListData();
+      }
+    });
   }
 
   void _navigateToDoctorChat(
@@ -35,10 +39,8 @@ class _ChatListScreenState extends State<ChatListScreen> {
       context,
       MaterialPageRoute(
         builder: (_) => BlocProvider<ConversationCubit>(
-          // Correctly provide ConversationCubit
           create: (blocContext) => ConversationCubit(
-            chatRepository: blocContext
-                .read<ChatRepository>(), // Access ChatRepository
+            chatRepository: blocContext.read<ChatRepository>(),
             conversationId: chatPreview.id,
           )..fetchMessages(),
           child: ConversationScreen(
@@ -54,8 +56,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // const double chatListItemExtent = 80.0;
-
+    print("ChatListScreen: Build method called");
     return Scaffold(
       backgroundColor: AppColors.white,
       appBar: PreferredSize(
@@ -88,6 +89,9 @@ class _ChatListScreenState extends State<ChatListScreen> {
       ),
       body: BlocConsumer<ChatListCubit, ChatListState>(
         listener: (context, state) {
+          print(
+            "ChatListScreen Listener: Received state - ${state.runtimeType}",
+          );
           if (state is ChatListFailure) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
@@ -98,12 +102,44 @@ class _ChatListScreenState extends State<ChatListScreen> {
           }
         },
         builder: (context, state) {
+          print(
+            "ChatListScreen Builder: Building for state - ${state.runtimeType}",
+          );
+
           if (state is ChatListLoading || state is ChatListInitial) {
-            return const Center(
-              child: CircularProgressIndicator(color: AppColors.primaryRed),
+            print("ChatListScreen Builder: Showing Loading UI");
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: <Widget>[
+                  SizedBox(
+                    width: 36,
+                    height: 36,
+                    child: CircularProgressIndicator(
+                      valueColor: const AlwaysStoppedAnimation<Color>(
+                        AppColors.primaryRed,
+                      ),
+                      strokeWidth: 3.5,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    "جاري تحميل المحادثات...",
+                    style: TextStyle(
+                      color: AppColors.darkGreyText,
+                      fontFamily: 'Cairo',
+                      fontSize: 16,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
             );
-          }
-          if (state is ChatListLoaded) {
+          } else if (state is ChatListLoaded) {
+            print(
+              "ChatListScreen Builder: Showing Loaded UI with ${state.chatPreviews.length} previews, ${state.activeDoctors.length} doctors",
+            );
             final List<DoctorModel> activeDoctors = state.activeDoctors;
             final List<ChatPreviewModel> chatMessages = state.chatPreviews;
 
@@ -182,7 +218,6 @@ class _ChatListScreenState extends State<ChatListScreen> {
                               context,
                               MaterialPageRoute(
                                 builder: (_) => BlocProvider<ConversationCubit>(
-                                  // Correctly provide
                                   create: (blocContext) => ConversationCubit(
                                     chatRepository: blocContext
                                         .read<ChatRepository>(),
@@ -231,7 +266,6 @@ class _ChatListScreenState extends State<ChatListScreen> {
                       : ListView.builder(
                           padding: const EdgeInsets.symmetric(horizontal: 16.0),
                           itemCount: chatMessages.length,
-                          // itemExtent: chatListItemExtent,
                           itemBuilder: (context, index) {
                             final msgPreview = chatMessages[index];
                             return ChatListItem(
@@ -249,10 +283,40 @@ class _ChatListScreenState extends State<ChatListScreen> {
                 ),
               ],
             );
+          } else if (state is ChatListFailure) {
+            print(
+              "ChatListScreen Builder: Showing Failure UI - ${state.message}",
+            );
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Text(
+                  "حدث خطأ في تحميل البيانات:\n${state.message}",
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontFamily: 'Cairo',
+                    color: Colors.red,
+                    fontSize: 16,
+                  ),
+                ),
+              ),
+            );
+          } else {
+            print(
+              "ChatListScreen Builder: Showing Unknown State UI for state - ${state.runtimeType}",
+            );
+            return const Center(
+              child: Text(
+                "حالة غير معروفة أو واجهة غير محددة لهذه الحالة.",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontFamily: 'Cairo',
+                  color: AppColors.lightGrey,
+                  fontSize: 16,
+                ),
+              ),
+            );
           }
-          return const Center(
-            child: Text("حدث خطأ ما", textAlign: TextAlign.right),
-          );
         },
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
@@ -262,21 +326,64 @@ class _ChatListScreenState extends State<ChatListScreen> {
           onPressed: () {
             Navigator.pushNamed(context, '/ai_mama_chat');
           },
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          child: Image.asset(
-            'assets/images/AI_mama.png',
-            width: 60,
-            height: 60,
-            fit: BoxFit.contain,
-          ),
+          backgroundColor: AppColors
+              .primaryRed, // Changed from transparent to see the button
+          elevation: 4, // Added some elevation
+          // child: Image.asset(
+          //   'assets/images/AI_mama.png', // This was causing the error
+          //   width: 60,
+          //   height: 60,
+          //   fit: BoxFit.contain,
+          // ),
+          child: const Icon(
+            Icons.chat_bubble_outline,
+            color: Colors.white,
+            size: 30,
+          ), // Placeholder Icon
         ),
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _bottomNavIndex,
         onTap: (index) {
-          setState(() => _bottomNavIndex = index);
-          // TODO: Implement actual navigation based on index
+          if (index == 2) {
+            if (_bottomNavIndex != index) {
+              setState(() {
+                _bottomNavIndex = index;
+              });
+            }
+            return;
+          }
+          setState(() {
+            _bottomNavIndex = index;
+          });
+          String screenName = "";
+          switch (index) {
+            case 0:
+              screenName = "الملف الشخصي (Profile)";
+              break;
+            case 1:
+              screenName = "المتجر (Store)";
+              break;
+            case 3:
+              screenName = "مقالات (Articles)";
+              break;
+            case 4:
+              screenName = "المزيد (More)";
+              break;
+          }
+          if (screenName.isNotEmpty) {
+            ScaffoldMessenger.of(context).hideCurrentSnackBar();
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  "تم تحديد $screenName. سيتم تنفيذ الانتقال لهذه الشاشة لاحقاً.",
+                  textAlign: TextAlign.right,
+                  style: const TextStyle(fontFamily: 'Cairo'),
+                ),
+                duration: const Duration(seconds: 2),
+              ),
+            );
+          }
         },
         type: BottomNavigationBarType.fixed,
         backgroundColor: AppColors.white,

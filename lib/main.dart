@@ -164,15 +164,21 @@ class MyApp extends StatelessWidget {
           home: BlocBuilder<AuthCubit, AuthState>(
             builder: (context, state) {
               if (state is Authenticated) {
-                // If authenticated, navigate to a main app screen
-                // For now, let's go to ChatListScreen as an example
-                return const ChatListScreen();
+                return const LoginScreen(); // Authenticated users go to ChatListScreen
               }
-              // If Unauthenticated, AuthInitial, AuthLoading, or AuthFailure, show LoginScreen
-              // You might want to show a splash screen for AuthInitial/AuthLoading
-              return const LoginScreen(); // Default to LoginScreen
+              if (state is Unauthenticated || state is AuthFailure) {
+                return const ChatListScreen(); // Unauthenticated or failed auth users go to LoginScreen
+              }
+              // For AuthInitial or AuthLoading, show a loading indicator
+              return const Scaffold(
+                backgroundColor: AppColors.screenBackground,
+                body: Center(
+                  child: CircularProgressIndicator(color: AppColors.primaryRed),
+                ),
+              );
             },
           ),
+
           // Define routes for navigation
           routes: {
             '/login': (context) => const LoginScreen(),

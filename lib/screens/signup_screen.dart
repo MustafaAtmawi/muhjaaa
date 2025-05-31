@@ -79,7 +79,7 @@ class _SignupScreenState extends State<SignupScreen> {
                   const SizedBox(height: 20),
                   SvgPicture.asset(
                     'assets/images/Muhja_logo.svg',
-                    height: MediaQuery.of(context).size.height * 0.15,
+                    height: MediaQuery.of(context).size.height * 0.25,
                   ),
                   const SizedBox(height: 10),
                   const Text(
@@ -103,11 +103,11 @@ class _SignupScreenState extends State<SignupScreen> {
                               controller: _usernameController,
                               labelText: 'اسم المستخدم',
                               prefixIcon: SvgPicture.asset(
-                                'assets/icons/Group.svg',
+                                'assets/icons/Person.svg',
                                 width: 20,
                                 height: 20,
                                 colorFilter: const ColorFilter.mode(
-                                  AppColors.lightGrey,
+                                  AppColors.darkGreyText,
                                   BlendMode.srcIn,
                                 ),
                               ),
@@ -126,7 +126,7 @@ class _SignupScreenState extends State<SignupScreen> {
                               keyboardType: TextInputType.emailAddress,
                               prefixIcon: const Icon(
                                 Icons.email_outlined,
-                                color: AppColors.lightGrey,
+                                color: AppColors.darkGreyText,
                                 size: 22,
                               ),
                               validator: (value) {
@@ -146,10 +146,14 @@ class _SignupScreenState extends State<SignupScreen> {
                                   child: CustomTextFormField(
                                     controller: _firstNameController,
                                     labelText: 'الاسم الأول',
-                                    prefixIcon: const Icon(
-                                      Icons.person_outline,
-                                      color: AppColors.lightGrey,
-                                      size: 22,
+                                    prefixIcon: SvgPicture.asset(
+                                      'assets/icons/Person.svg',
+                                      width: 20,
+                                      height: 20,
+                                      colorFilter: const ColorFilter.mode(
+                                        AppColors.darkGreyText,
+                                        BlendMode.srcIn,
+                                      ),
                                     ),
                                     validator: (value) {
                                       if (value == null || value.isEmpty)
@@ -165,10 +169,14 @@ class _SignupScreenState extends State<SignupScreen> {
                                   child: CustomTextFormField(
                                     controller: _lastNameController,
                                     labelText: 'اسم العائلة',
-                                    prefixIcon: const Icon(
-                                      Icons.person_outline,
-                                      color: AppColors.lightGrey,
-                                      size: 22,
+                                    prefixIcon: SvgPicture.asset(
+                                      'assets/icons/Person.svg',
+                                      width: 20,
+                                      height: 20,
+                                      colorFilter: const ColorFilter.mode(
+                                        AppColors.darkGreyText,
+                                        BlendMode.srcIn,
+                                      ),
                                     ),
                                     validator: (value) {
                                       if (value == null || value.isEmpty)
@@ -191,7 +199,7 @@ class _SignupScreenState extends State<SignupScreen> {
                                 width: 20,
                                 height: 20,
                                 colorFilter: const ColorFilter.mode(
-                                  AppColors.lightGrey,
+                                  AppColors.darkGreyText,
                                   BlendMode.srcIn,
                                 ),
                               ),
@@ -200,7 +208,7 @@ class _SignupScreenState extends State<SignupScreen> {
                                   _isPasswordVisible
                                       ? Icons.visibility_off_outlined
                                       : Icons.visibility_outlined,
-                                  color: AppColors.lightGrey,
+                                  color: AppColors.darkGreyText,
                                   size: 22,
                                 ),
                                 onPressed: () => setState(
@@ -256,7 +264,7 @@ class _SignupScreenState extends State<SignupScreen> {
                               children: [
                                 const Expanded(
                                   child: Divider(
-                                    color: AppColors.lightGrey,
+                                    color: AppColors.darkGreyText,
                                     thickness: 1,
                                   ),
                                 ),
@@ -268,14 +276,14 @@ class _SignupScreenState extends State<SignupScreen> {
                                     'أو أكمل بواسطة', // "Or Continue with"
                                     style: TextStyle(
                                       fontFamily: 'Cairo',
-                                      color: AppColors.lightGrey,
+                                      color: AppColors.darkGreyText,
                                       fontSize: 14,
                                     ),
                                   ),
                                 ),
                                 const Expanded(
                                   child: Divider(
-                                    color: AppColors.lightGrey,
+                                    color: AppColors.darkGreyText,
                                     thickness: 1,
                                   ),
                                 ),

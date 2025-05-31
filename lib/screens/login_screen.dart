@@ -73,9 +73,9 @@ class _LoginScreenState extends State<LoginScreen> {
                     labelText: "اسم المستخدم",
                     prefixIcon: SvgPicture.asset(
                       // Consistent icon with Signup
-                      'assets/icons/Group.svg',
-                      width: 20,
-                      height: 20,
+                      'assets/icons/Message.svg',
+                      width: 25,
+                      height: 25,
                       colorFilter: const ColorFilter.mode(
                         AppColors.darkGreyText,
                         BlendMode.srcIn,
@@ -94,8 +94,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     obscureText: true,
                     prefixIcon: SvgPicture.asset(
                       'assets/icons/Lock-icon.svg',
-                      width: 20,
-                      height: 20,
+                      width: 30,
+                      height: 30,
                       colorFilter: const ColorFilter.mode(
                         AppColors.darkGreyText,
                         BlendMode.srcIn,
