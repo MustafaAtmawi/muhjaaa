@@ -1,13 +1,11 @@
 import 'package:muhjaaa/models/chat_preview_model.dart';
 import 'package:muhjaaa/models/doctor_model.dart';
-import 'package:muhjaaa/models/message_model.dart';
+import 'package:muhjaaa/models/message_model.dart'; // For SenderType and MessageModel
 import 'package:muhjaaa/repositories/failure.dart';
-import 'package:muhjaaa/widgets/message_bubble.dart'; // For SenderType
-import 'auth_repository.dart'; // For FutureEither type and Either definition
+import 'package:muhjaaa/utils/either.dart'; // For FutureEither type and Either definition
 
 class ChatRepository {
   FutureEither<List<ChatPreviewModel>> getChatPreviews() async {
-    // ... (no changes here, assuming it's not the issue for this screen)
     await Future.delayed(const Duration(seconds: 1));
     final List<ChatPreviewModel> mockPreviews = [
       const ChatPreviewModel(
@@ -33,7 +31,6 @@ class ChatRepository {
   }
 
   FutureEither<List<DoctorModel>> getActiveDoctors() async {
-    // ... (no changes here)
     await Future.delayed(const Duration(seconds: 1));
     final List<DoctorModel> mockDoctors = [
       const DoctorModel(
@@ -53,23 +50,11 @@ class ChatRepository {
   }
 
   FutureEither<List<MessageModel>> getMessages(String conversationId) async {
-    print(
-      "[ChatRepository] getMessages: Called for conversationId: $conversationId",
-    );
     try {
-      print(
-        "[ChatRepository] getMessages: Simulating network delay for $conversationId...",
-      );
       await Future.delayed(const Duration(seconds: 1));
-      print(
-        "[ChatRepository] getMessages: Network delay complete for $conversationId.",
-      );
       const String currentUserId = "user123";
 
       if (conversationId == "ai_mama_chat") {
-        print(
-          "[ChatRepository] getMessages: Matched conversationId 'ai_mama_chat'. Creating mock messages.",
-        );
         final List<MessageModel> mockMessages = [
           MessageModel(
             id: 'msg1_ai',
@@ -78,8 +63,7 @@ class ChatRepository {
             senderType: SenderType.aiMama,
             senderId: 'ai_mama_id',
             timestamp: DateTime.now().subtract(const Duration(minutes: 10)),
-            avatarAssetPath:
-                'assets/images/Ai_Mama.svg', // Ensure this path is correct
+            avatarAssetPath: 'assets/images/Ai_Mama.svg',
           ),
           MessageModel(
             id: 'msg2_ai',
@@ -97,18 +81,11 @@ class ChatRepository {
             senderType: SenderType.aiMama,
             senderId: 'ai_mama_id',
             timestamp: DateTime.now().subtract(const Duration(minutes: 5)),
-            avatarAssetPath:
-                'assets/images/Ai_Mama.svg', // Ensure this path is correct
+            avatarAssetPath: 'assets/images/Ai_Mama.svg',
           ),
         ];
-        print(
-          "[ChatRepository] getMessages: Returning Right with ${mockMessages.length} mock messages for 'ai_mama_chat'.",
-        );
         return Right(mockMessages);
       } else if (conversationId == "chat1") {
-        print(
-          "[ChatRepository] getMessages: Matched conversationId 'chat1'. Creating mock messages.",
-        );
         final List<MessageModel> mockMessages = [
           MessageModel(
             id: 'msg1_doc',
@@ -127,25 +104,12 @@ class ChatRepository {
             avatarInitial: 'أ',
           ),
         ];
-        print(
-          "[ChatRepository] getMessages: Returning Right with ${mockMessages.length} mock messages for 'chat1'.",
-        );
         return Right(mockMessages);
       } else if (conversationId == "chat2") {
-        print(
-          "[ChatRepository] getMessages: Matched conversationId 'chat2'. Returning Right with empty list.",
-        );
         return const Right(<MessageModel>[]);
       }
-      print(
-        "[ChatRepository] getMessages: ConversationId '$conversationId' not found. Returning Left(Failure).",
-      );
       return const Left(Failure("Conversation not found", statusCode: 404));
-    } catch (e, stackTrace) {
-      print(
-        "[ChatRepository] getMessages: CRITICAL ERROR in getMessages for $conversationId: $e",
-      );
-      print("[ChatRepository] getMessages: StackTrace: $stackTrace");
+    } catch (e) {
       return Left(
         Failure(
           "Critical error in repository getMessages: ${e.toString()}",
@@ -159,7 +123,6 @@ class ChatRepository {
     String conversationId,
     String text,
   ) async {
-    // ... (sendMessage logic can also have prints if needed later)
     await Future.delayed(const Duration(milliseconds: 500));
     const String currentUserId = "user123";
     final MessageModel sentMessage = MessageModel(

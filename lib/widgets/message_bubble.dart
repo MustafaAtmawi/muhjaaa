@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:muhjaaa/utils/app_colors.dart';
-
-// DEFINED SenderType enum here
-enum SenderType { me, otherParty, aiMama }
+import 'package:muhjaaa/models/message_model.dart'; // Import SenderType from message_model
 
 class MessageBubble extends StatelessWidget {
   final String text;
-  final SenderType senderType; // Now correctly typed
+  final SenderType senderType;
   final String? avatarInitial;
   final String? avatarAssetPath;
 
@@ -28,7 +26,6 @@ class MessageBubble extends StatelessWidget {
     MainAxisAlignment rowMainAxisAlignment;
     Widget? currentAvatarWidget;
 
-    // Avatar logic
     if (avatarAssetPath != null && avatarAssetPath!.isNotEmpty) {
       Widget avatarImage;
       if (avatarAssetPath!.toLowerCase().endsWith('.svg')) {
@@ -56,7 +53,9 @@ class MessageBubble extends StatelessWidget {
         );
       }
       currentAvatarWidget = Padding(
-        padding: EdgeInsets.all(20),
+        padding: const EdgeInsets.all(
+          20,
+        ), // This padding seems large for an avatar in a bubble row
         child: CircleAvatar(
           radius: 16,
           backgroundColor: Colors.transparent,
@@ -67,19 +66,18 @@ class MessageBubble extends StatelessWidget {
       Color avatarBgColor = AppColors.mutedBlueGrey.withAlpha(
         (0.7 * 255).round(),
       );
-      // This is where the error in the screenshot occurred.
-      // Now SenderType.me will be correctly recognized.
       if (senderType == SenderType.me) {
-        // No error here now
         avatarBgColor = AppColors.primaryOrange.withAlpha((0.7 * 255).round());
       }
 
       currentAvatarWidget = Padding(
         padding: EdgeInsets.only(
           left: isSenderMe ? 0 : 10,
-          right: !isSenderMe ? 20 : 10,
-          top: 10,
-          bottom: 10,
+          right: !isSenderMe ? 20 : 10, // Adjusted padding for consistency
+          top:
+              10, // Consider aligning with bubble or removing if bubble handles spacing
+          bottom:
+              10, // Consider aligning with bubble or removing if bubble handles spacing
         ),
         child: CircleAvatar(
           radius: 16,
@@ -114,7 +112,7 @@ class MessageBubble extends StatelessWidget {
     final BorderRadius borderRadius = isSenderMe
         ? const BorderRadius.only(
             topLeft: Radius.circular(16),
-            bottomLeft: Radius.circular(4),
+            bottomLeft: Radius.circular(4), // Distinctive shape for sender
             topRight: Radius.circular(16),
             bottomRight: Radius.circular(16),
           )
@@ -122,7 +120,7 @@ class MessageBubble extends StatelessWidget {
             topLeft: Radius.circular(16),
             bottomLeft: Radius.circular(16),
             topRight: Radius.circular(16),
-            bottomRight: Radius.circular(4),
+            bottomRight: Radius.circular(4), // Distinctive shape for receiver
           );
 
     List<String> lines = text.split('\n');
@@ -134,11 +132,15 @@ class MessageBubble extends StatelessWidget {
           padding: EdgeInsets.only(top: textWidgets.isEmpty ? 0 : 2.0),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
+            mainAxisSize: MainAxisSize.min, // Important for intrinsic width
             children: [
               if (isBulletPoint)
                 Padding(
-                  padding: const EdgeInsets.only(right: 0, left: 4.0, top: 4.5),
+                  padding: const EdgeInsets.only(
+                    right: 0,
+                    left: 4.0,
+                    top: 4.5,
+                  ), // Adjust for RTL if bullet should be on right
                   child: Icon(
                     Icons.circle,
                     size: 6,
@@ -146,9 +148,12 @@ class MessageBubble extends StatelessWidget {
                   ),
                 ),
               Flexible(
+                // Ensures text wraps within the bubble's constraints
                 child: Text(
                   isBulletPoint ? line.trim().substring(2).trim() : line.trim(),
-                  textAlign: isSenderMe ? TextAlign.end : TextAlign.start,
+                  textAlign: isSenderMe
+                      ? TextAlign.end
+                      : TextAlign.start, // Correct for RTL
                   style: TextStyle(
                     fontFamily: 'Cairo',
                     color: textColor,
@@ -167,10 +172,12 @@ class MessageBubble extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 4.0),
       child: Row(
         mainAxisAlignment: rowMainAxisAlignment,
-        crossAxisAlignment: CrossAxisAlignment.end,
+        crossAxisAlignment:
+            CrossAxisAlignment.end, // Aligns avatar with bottom of bubble
         children: [
           if (!isSenderMe && currentAvatarWidget != null) currentAvatarWidget,
           Flexible(
+            // Allow bubble to take available space but not overflow
             child: Container(
               constraints: BoxConstraints(
                 maxWidth: MediaQuery.of(context).size.width * 0.75,
@@ -184,7 +191,7 @@ class MessageBubble extends StatelessWidget {
                 borderRadius: borderRadius,
               ),
               child: Column(
-                mainAxisSize: MainAxisSize.min,
+                mainAxisSize: MainAxisSize.min, // Bubble fits content
                 crossAxisAlignment: isSenderMe
                     ? CrossAxisAlignment.end
                     : CrossAxisAlignment.start,

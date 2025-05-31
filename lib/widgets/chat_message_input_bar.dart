@@ -1,4 +1,3 @@
-// lib/widgets/chat_message_input_bar.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:muhjaaa/utils/app_colors.dart';
@@ -6,8 +5,8 @@ import 'package:muhjaaa/utils/app_colors.dart';
 class ChatMessageInputBar extends StatelessWidget {
   final TextEditingController messageController;
   final VoidCallback onSendMessage;
-  final VoidCallback? onAttachFile; // Optional: if you implement it
-  final VoidCallback? onInsertImage; // Optional: if you implement it
+  final VoidCallback? onAttachFile;
+  final VoidCallback? onInsertImage;
   final FocusNode? focusNode;
 
   const ChatMessageInputBar({
@@ -33,7 +32,7 @@ class ChatMessageInputBar extends StatelessWidget {
         ),
         child: Container(
           decoration: BoxDecoration(
-            color: AppColors.searchBarBg, // Or AppColors.messageInputBg
+            color: AppColors.searchBarBg,
             borderRadius: BorderRadius.circular(30.0),
           ),
           padding: const EdgeInsets.symmetric(horizontal: 8.0),
@@ -50,8 +49,7 @@ class ChatMessageInputBar extends StatelessWidget {
                     hintStyle: TextStyle(
                       fontFamily: 'Cairo',
                       fontSize: 15,
-                      color: AppColors
-                          .lightGrey, // Or AppColors.messageInputHintText
+                      color: AppColors.lightGrey,
                     ),
                     border: InputBorder.none,
                     contentPadding: EdgeInsets.symmetric(vertical: 10),
@@ -74,8 +72,13 @@ class ChatMessageInputBar extends StatelessWidget {
                     'assets/icons/Insert_File.svg',
                     width: 26,
                     height: 26,
-                    colorFilter: ColorFilter.mode(
-                      AppColors.darkGreyText.withOpacity(0.7),
+                    colorFilter: const ColorFilter.mode(
+                      Color.fromRGBO(
+                        100,
+                        99,
+                        99,
+                        0.7,
+                      ), // AppColors.darkGreyText.withOpacity(0.7)
                       BlendMode.srcIn,
                     ),
                     errorBuilder: (context, error, stackTrace) => const Icon(
@@ -93,8 +96,13 @@ class ChatMessageInputBar extends StatelessWidget {
                     'assets/icons/Insert_Image.svg',
                     width: 26,
                     height: 26,
-                    colorFilter: ColorFilter.mode(
-                      AppColors.darkGreyText.withOpacity(0.7),
+                    colorFilter: const ColorFilter.mode(
+                      Color.fromRGBO(
+                        100,
+                        99,
+                        99,
+                        0.7,
+                      ), // AppColors.darkGreyText.withOpacity(0.7)
                       BlendMode.srcIn,
                     ),
                     errorBuilder: (context, error, stackTrace) => const Icon(

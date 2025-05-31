@@ -6,7 +6,8 @@ class FeatureListItem extends StatelessWidget {
   final Color iconBackgroundColor;
 
   const FeatureListItem({
-    super.key, // Use super.key
+    // Added const constructor
+    super.key,
     required this.text,
     required this.iconBackgroundColor,
   });
@@ -23,15 +24,18 @@ class FeatureListItem extends StatelessWidget {
             color: iconBackgroundColor,
             shape: BoxShape.circle,
           ),
-          // If iconBackgroundColor is a const, this Icon can be const.
-          // For safety, assuming iconBackgroundColor might not always be const from call site.
-          child: const Icon(Icons.check, color: AppColors.white, size: 14),
+          child: const Icon(
+            Icons.check,
+            color: AppColors.white,
+            size: 14,
+          ), // Made Icon const
         ),
-        const SizedBox(width: 12),
+        const SizedBox(width: 12), // Made const
         Expanded(
           child: Text(
             text,
             style: const TextStyle(
+              // Made const
               fontFamily: 'Cairo',
               fontSize: 14,
               color: AppColors.darkGreyText,

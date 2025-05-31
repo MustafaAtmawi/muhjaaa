@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_svg/flutter_svg.dart'; // Import flutter_svg
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:muhjaaa/cubits/chat/chat_list_cubit.dart';
 import 'package:muhjaaa/cubits/chat/conversation_cubit.dart';
 import 'package:muhjaaa/models/chat_preview_model.dart';
@@ -10,7 +10,7 @@ import 'package:muhjaaa/screens/conversation_screen.dart';
 import 'package:muhjaaa/utils/app_colors.dart';
 import 'package:muhjaaa/widgets/active_doctor_avatar.dart';
 import 'package:muhjaaa/widgets/chat_list_item.dart';
-import 'package:muhjaaa/widgets/app_drawer.dart'; // Import the AppDrawer
+import 'package:muhjaaa/widgets/app_drawer.dart';
 
 class ChatListScreen extends StatefulWidget {
   const ChatListScreen({super.key});
@@ -20,9 +20,8 @@ class ChatListScreen extends StatefulWidget {
 }
 
 class _ChatListScreenState extends State<ChatListScreen> {
-  int _bottomNavIndex = 2; // Default to Home/ChatList
-  final GlobalKey<ScaffoldState> _scaffoldKey =
-      GlobalKey<ScaffoldState>(); // Add a ScaffoldKey
+  int _bottomNavIndex = 2;
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
@@ -60,7 +59,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      key: _scaffoldKey, // Assign the key to the Scaffold
+      key: _scaffoldKey,
       backgroundColor: AppColors.white,
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(60.0),
@@ -74,14 +73,19 @@ class _ChatListScreenState extends State<ChatListScreen> {
               'assets/icons/Right.svg',
               width: 22,
               height: 22,
-              colorFilter: ColorFilter.mode(
-                AppColors.darkGreyText.withOpacity(0.7),
+              colorFilter: const ColorFilter.mode(
+                Color.fromRGBO(
+                  100,
+                  99,
+                  99,
+                  0.7,
+                ), // AppColors.darkGreyText.withOpacity(0.7)
                 BlendMode.srcIn,
               ),
             ),
             onPressed: () {
               // TODO: Implement action for right arrow (e.g., context.pop() if it's not a main screen)
-              print("AppBar leading (Right.svg) icon pressed");
+              // print("AppBar leading (Right.svg) icon pressed");
             },
           ),
           title: const Row(
@@ -98,8 +102,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
               ),
             ],
           ),
-          centerTitle:
-              false, // Title is aligned to the end (right in RTL) due to Row properties
+          centerTitle: false,
           actions: [
             IconButton(
               icon: const Icon(
@@ -108,16 +111,14 @@ class _ChatListScreenState extends State<ChatListScreen> {
                 size: 28,
               ),
               onPressed: () {
-                _scaffoldKey.currentState
-                    ?.openEndDrawer(); // Open the drawer from the right
+                _scaffoldKey.currentState?.openEndDrawer();
               },
             ),
             const SizedBox(width: 8),
           ],
         ),
       ),
-      endDrawer:
-          AppDrawer(), // Set AppDrawer to endDrawer to appear from the right
+      endDrawer: AppDrawer(),
       body: BlocConsumer<ChatListCubit, ChatListState>(
         listener: (context, state) {
           if (state is ChatListFailure) {
@@ -225,8 +226,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
                     ),
                   ),
                   SizedBox(
-                    height:
-                        85, // Consider if this needs to be dynamic or check constraints
+                    height: 85,
                     child: ListView.builder(
                       scrollDirection: Axis.horizontal,
                       itemCount: activeDoctors.length,
@@ -386,9 +386,10 @@ class _ChatListScreenState extends State<ChatListScreen> {
         currentIndex: _bottomNavIndex,
         onTap: (index) {
           if (index == 2) {
-            if (_bottomNavIndex != index) {
-              // context.read<ChatListCubit>().fetchChatListData(); // Optionally refresh
-            }
+            // Home/ChatList
+            // if (_bottomNavIndex != index) { // Optionally refresh
+            //   context.read<ChatListCubit>().fetchChatListData();
+            // }
             setState(() {
               _bottomNavIndex = index;
             });
@@ -401,19 +402,19 @@ class _ChatListScreenState extends State<ChatListScreen> {
           switch (index) {
             case 0:
               screenName = "الملف الشخصي (Profile)";
-              // Navigator.pushNamed(context, '/my_account'); // Example navigation
+              // Navigator.pushNamed(context, '/my_account');
               break;
             case 1:
               screenName = "المتجر (Store)";
-              // Navigator.pushNamed(context, '/store'); // Example navigation
+              // Navigator.pushNamed(context, '/store');
               break;
             case 3:
               screenName = "مقالات (Articles)";
-              // Navigator.pushNamed(context, '/articles'); // Example navigation
+              // Navigator.pushNamed(context, '/articles');
               break;
             case 4:
               screenName = "المزيد (More)";
-              // Navigator.pushNamed(context, '/more'); // Example navigation
+              // Navigator.pushNamed(context, '/more');
               break;
           }
           if (screenName.isNotEmpty) {
@@ -469,13 +470,12 @@ class _ChatListScreenState extends State<ChatListScreen> {
           ),
           BottomNavigationBarItem(
             icon: Icon(
-              Icons
-                  .home_outlined, // Consider Icons.chat_bubble_outline if this is purely for chats
+              Icons.home_outlined,
               color: _bottomNavIndex == 2
                   ? AppColors.primaryRed
                   : AppColors.darkGreyText,
             ),
-            label: "الرئيسية", // Or "المحادثات" if more appropriate
+            label: "الرئيسية",
           ),
           BottomNavigationBarItem(
             icon: Icon(

@@ -3,7 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:muhjaaa/utils/app_colors.dart';
 import 'package:muhjaaa/screens/signup_screen.dart';
 import 'package:muhjaaa/widgets/custom_text_form_field.dart';
-import 'package:muhjaaa/widgets/forgot_password_sheet_widget.dart'; // Import the new widget
+import 'package:muhjaaa/widgets/forgot_password_sheet_widget.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -16,7 +16,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  bool _isPasswordVisible = false; // Added for password visibility toggle
+  bool _isPasswordVisible = false;
 
   @override
   void dispose() {
@@ -27,22 +27,19 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void _handleLogin() {
     if (_formKey.currentState!.validate()) {
-      // Form is valid
       // TODO: Call context.read<AuthCubit>().login(...);
-      print(
-        "Login form is valid. Username: ${_usernameController.text}, Password: ${_passwordController.text}",
-      );
-      // Example: Navigate to ChatListScreen on successful login
-      // Navigator.of(context).pushReplacementNamed('/chat_list');
+      // print(
+      //   "Login form is valid. Username: ${_usernameController.text}, Password: ${_passwordController.text}",
+      // );
+      // Example: Navigator.of(context).pushReplacementNamed('/chat_list');
     }
   }
 
   void _showForgotPasswordSheet(BuildContext context) {
     showModalBottomSheet(
       context: context,
-      isScrollControlled:
-          true, // Important for keyboard handling and custom height
-      backgroundColor: Colors.transparent, // Make background transparent
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
       builder: (BuildContext context) {
         return const ForgotPasswordSheetWidget();
       },
@@ -67,10 +64,8 @@ class _LoginScreenState extends State<LoginScreen> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: <Widget>[
                   SvgPicture.asset(
-                    'assets/images/Muhja_logo.svg', // Ensure this asset exists
-                    height:
-                        MediaQuery.of(context).size.height *
-                        0.25, // Adjusted size
+                    'assets/images/Muhja_logo.svg',
+                    height: MediaQuery.of(context).size.height * 0.25,
                   ),
                   const SizedBox(height: 20),
                   const Text(
@@ -86,14 +81,12 @@ class _LoginScreenState extends State<LoginScreen> {
                   const SizedBox(height: 30),
                   CustomTextFormField(
                     controller: _usernameController,
-                    labelText:
-                        "اسم المستخدم أو البريد الإلكتروني", // Updated label
+                    labelText: "اسم المستخدم أو البريد الإلكتروني",
                     prefixIcon: Padding(
-                      // Added padding for prefix icon
                       padding: const EdgeInsets.symmetric(horizontal: 12.0),
                       child: SvgPicture.asset(
-                        'assets/icons/Message.svg', // As per your assets
-                        width: 22, // Adjusted size
+                        'assets/icons/Message.svg',
+                        width: 22,
                         height: 22,
                         colorFilter: const ColorFilter.mode(
                           AppColors.darkGreyText,
@@ -114,11 +107,10 @@ class _LoginScreenState extends State<LoginScreen> {
                     labelText: "كلمة المرور",
                     obscureText: !_isPasswordVisible,
                     prefixIcon: Padding(
-                      // Added padding for prefix icon
                       padding: const EdgeInsets.symmetric(horizontal: 12.0),
                       child: SvgPicture.asset(
-                        'assets/icons/Lock-icon.svg', // As per your assets
-                        width: 22, // Adjusted size
+                        'assets/icons/Lock-icon.svg',
+                        width: 22,
                         height: 22,
                         colorFilter: const ColorFilter.mode(
                           AppColors.darkGreyText,
@@ -127,7 +119,6 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                     suffixIcon: IconButton(
-                      // Added suffix icon for visibility toggle
                       icon: Icon(
                         _isPasswordVisible
                             ? Icons.visibility_off_outlined
@@ -149,8 +140,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     },
                   ),
                   Align(
-                    alignment:
-                        Alignment.centerLeft, // For RTL, this will be top-right
+                    alignment: Alignment.centerLeft,
                     child: TextButton(
                       onPressed: () {
                         _showForgotPasswordSheet(context);
@@ -163,14 +153,13 @@ class _LoginScreenState extends State<LoginScreen> {
                         style: TextStyle(
                           fontFamily: 'Cairo',
                           fontSize: 14.0,
-                          color: AppColors
-                              .primaryRed, // Changed color to primaryRed
-                          fontWeight: FontWeight.w600, // Made it semi-bold
+                          color: AppColors.primaryRed,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 10), // Adjusted spacing
+                  const SizedBox(height: 10),
                   ElevatedButton(
                     onPressed: _handleLogin,
                     style: ElevatedButton.styleFrom(
@@ -180,15 +169,14 @@ class _LoginScreenState extends State<LoginScreen> {
                         borderRadius: BorderRadius.circular(12.0),
                       ),
                       textStyle: const TextStyle(
-                        // Ensure text style for button text
                         fontFamily: 'Cairo',
-                        fontSize: 18.0, // Adjusted size
-                        fontWeight: FontWeight.bold, // Adjusted weight
+                        fontSize: 18.0,
+                        fontWeight: FontWeight.bold,
                         color: AppColors.white,
                       ),
                     ),
                     child: const Text(
-                      "تسجيل الدخول", // Changed from "التسجيل"
+                      "تسجيل الدخول",
                       style: TextStyle(
                         fontFamily: 'Cairo',
                         fontSize: 18.0,
@@ -197,23 +185,28 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 25), // Adjusted spacing
+                  const SizedBox(height: 25),
                   Row(
                     children: <Widget>[
                       const Expanded(
                         child: Divider(
                           color: AppColors.lightGrey,
-                          thickness: 0.5, // Thinner divider
+                          thickness: 0.5,
                         ),
                       ),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 10.0),
                         child: Text(
-                          "أو سجل الدخول بواسطة", // Changed text and style
+                          "أو سجل الدخول بواسطة",
                           style: TextStyle(
                             fontFamily: 'Cairo',
                             fontSize: 13.0,
-                            color: AppColors.darkGreyText.withOpacity(0.7),
+                            color: const Color.fromRGBO(
+                              100,
+                              99,
+                              99,
+                              0.7,
+                            ), // AppColors.darkGreyText.withOpacity(0.7)
                             fontWeight: FontWeight.normal,
                           ),
                         ),
@@ -233,11 +226,11 @@ class _LoginScreenState extends State<LoginScreen> {
                       InkWell(
                         onTap: () {
                           // TODO: Google login
-                          print("Google login tapped");
+                          // print("Google login tapped");
                         },
                         child: SvgPicture.asset(
-                          'assets/icons/Google.svg', // As per your assets
-                          width: 50, // Adjusted size
+                          'assets/icons/Google.svg',
+                          width: 50,
                           height: 50,
                         ),
                       ),
@@ -245,10 +238,10 @@ class _LoginScreenState extends State<LoginScreen> {
                       InkWell(
                         onTap: () {
                           // TODO: Facebook login
-                          print("Facebook login tapped");
+                          // print("Facebook login tapped");
                         },
                         child: SvgPicture.asset(
-                          'assets/icons/Facebook.svg', // As per your assets
+                          'assets/icons/Facebook.svg',
                           width: 50,
                           height: 50,
                         ),
@@ -269,14 +262,12 @@ class _LoginScreenState extends State<LoginScreen> {
                         style: TextStyle(
                           fontFamily: 'Cairo',
                           fontSize: 16.0,
-                          fontWeight: FontWeight.w600, // Semi-bold
+                          fontWeight: FontWeight.w600,
                         ),
                         children: <TextSpan>[
                           TextSpan(
-                            text: "ليس لديك حساب؟ ", // "Don't have an account?"
-                            style: TextStyle(
-                              color: AppColors.darkGreyText,
-                            ), // Changed color
+                            text: "ليس لديك حساب؟ ",
+                            style: TextStyle(color: AppColors.darkGreyText),
                           ),
                           TextSpan(
                             text: "سجل الآن",

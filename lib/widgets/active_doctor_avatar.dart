@@ -5,14 +5,14 @@ class ActiveDoctorAvatar extends StatelessWidget {
   final VoidCallback? onTap;
   final String placeholderLetter;
   final String? avatarUrl;
-  final String? name; // Parameter for doctor's name
+  final String? name;
 
   const ActiveDoctorAvatar({
     super.key,
     this.onTap,
     required this.placeholderLetter,
     this.avatarUrl,
-    this.name, // Make sure 'name' is included in the constructor
+    this.name,
   });
 
   @override
@@ -22,7 +22,7 @@ class ActiveDoctorAvatar extends StatelessWidget {
       avatarChild = ClipOval(
         child: Image.network(
           avatarUrl!,
-          width: 50, // Diameter of the avatar circle
+          width: 50,
           height: 50,
           fit: BoxFit.cover,
           errorBuilder: (context, error, stackTrace) {
@@ -79,23 +79,24 @@ class ActiveDoctorAvatar extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: 6.0,
-        ), // Spacing between avatars
+        padding: const EdgeInsets.symmetric(horizontal: 6.0),
         child: SizedBox(
-          // To ensure the Stack has a defined size for positioning the dot
           width: 56,
           height: 56,
           child: Stack(
             alignment: Alignment.center,
             children: [
               CircleAvatar(
-                radius: 25, // Main avatar size (50 diameter)
-                backgroundColor: AppColors.mutedBlueGrey.withOpacity(0.5),
+                radius: 25,
+                backgroundColor: const Color.fromRGBO(
+                  154,
+                  181,
+                  189,
+                  0.5,
+                ), // AppColors.mutedBlueGrey.withOpacity(0.5)
                 child: avatarChild,
               ),
               Positioned(
-                // Green active dot
                 top: 15,
                 right: 5,
                 child: Container(

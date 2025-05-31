@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:muhjaaa/utils/app_colors.dart'; // For SVG assets like the FAB icon
-import 'package:muhjaaa/widgets/app_drawer.dart'; // Added import for AppDrawer
+import 'package:muhjaaa/utils/app_colors.dart';
+import 'package:muhjaaa/widgets/app_drawer.dart';
 
-// Data model for appointment item (as you provided)
+// Data model for appointment item
 class AppointmentInfo {
+  // Kept local as it's only used here and not a core domain model yet
   final String doctorName;
   final String specialty;
   final String timeSlot;
-  final String avatarAsset; // Placeholder asset path
+  final String avatarAsset;
   final bool isOnline;
 
   AppointmentInfo({
@@ -28,14 +29,13 @@ class MyAppointmentsScreen extends StatefulWidget {
 }
 
 class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
-  // Added ScaffoldKey to control the drawer
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
-  String _selectedFilter =
-      "أخصائيين"; // Default selected filter (as you provided)
-  int _bottomNavIndex = 2; // Assuming "Home" is the default (as you provided)
+  String _selectedFilter = "أخصائيين";
+  int _bottomNavIndex =
+      2; // Assuming "Home" (index 2) is where "My Appointments" might be accessed or is a default
 
-  // Mock data for the list (as you provided)
+  // Mock data for the list
   final List<AppointmentInfo> _appointments = List.generate(
     3,
     (index) => AppointmentInfo(
@@ -47,7 +47,6 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
     ),
   );
 
-  // _buildFilterButton method (as you provided)
   Widget _buildFilterButton(String title) {
     final bool isSelected = _selectedFilter == title;
     return Expanded(
@@ -70,11 +69,7 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
               borderRadius: BorderRadius.circular(8.0),
               side: isSelected
                   ? BorderSide.none
-                  : BorderSide(
-                      color:
-                          AppColors.unselectedButtonBorder ??
-                          Colors.grey.shade300, // Added null check for safety
-                    ),
+                  : BorderSide(color: AppColors.unselectedButtonBorder),
             ),
             elevation: isSelected ? 2 : 0,
             padding: const EdgeInsets.symmetric(vertical: 12.0),
@@ -95,9 +90,8 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      key: _scaffoldKey, // Assign the key to the Scaffold
+      key: _scaffoldKey,
       backgroundColor: AppColors.screenBackground,
-      // AppBar copied from ChatListScreen.dart
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(60.0),
         child: AppBar(
@@ -106,25 +100,28 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
           automaticallyImplyLeading: false,
           titleSpacing: 0,
           leading: IconButton(
+            // Back button or navigation icon
             icon: SvgPicture.asset(
-              'assets/icons/Right.svg',
+              'assets/icons/Right.svg', // This is usually a "back" or "close" icon in LTR, so "forward" in RTL
               width: 22,
               height: 22,
               colorFilter: ColorFilter.mode(
-                AppColors.darkGreyText.withOpacity(0.7),
+                AppColors.darkGreyText.withAlpha((0.7 * 255).round()),
                 BlendMode.srcIn,
               ),
             ),
             onPressed: () {
-              // TODO: Implement action for right arrow (e.g., context.pop() if it's not a main screen)
-              print("AppBar leading (Right.svg) icon pressed");
+              if (Navigator.canPop(context)) {
+                Navigator.pop(context);
+              }
             },
           ),
           title: const Row(
-            mainAxisAlignment: MainAxisAlignment.end,
+            mainAxisAlignment:
+                MainAxisAlignment.end, // Aligns title to the right for RTL
             children: [
               Text(
-                "المحادثات", // This title is from ChatListScreen's AppBar
+                "مواعيدي", // Corrected Title: "My Appointments"
                 style: TextStyle(
                   fontFamily: 'Cairo',
                   color: AppColors.darkGreyText,
@@ -134,7 +131,7 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
               ),
             ],
           ),
-          centerTitle: false,
+          centerTitle: false, // Title is aligned via the Row
           actions: [
             IconButton(
               icon: const Icon(
@@ -143,16 +140,15 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
                 size: 28,
               ),
               onPressed: () {
-                _scaffoldKey.currentState?.openEndDrawer(); // Open the drawer
+                _scaffoldKey.currentState?.openEndDrawer();
               },
             ),
             const SizedBox(width: 8),
           ],
         ),
       ),
-      endDrawer: AppDrawer(), // Added endDrawer for the AppBar's menu button
+      endDrawer: AppDrawer(),
       body: Padding(
-        // Body content (as you provided)
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
         child: Column(
           children: [
@@ -167,6 +163,7 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
                   fontSize: 14,
                 ),
                 prefixIcon: const Icon(
+                  // Prefix will be on the left visually in RTL
                   Icons.search,
                   color: AppColors.lightGrey,
                 ),
@@ -199,21 +196,34 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
             ),
             const SizedBox(height: 20.0),
             Expanded(
-              child: ListView.builder(
-                itemCount: _appointments.length,
-                itemBuilder: (context, index) {
-                  return _AppointmentItemCard(
-                    appointment: _appointments[index],
-                  );
-                },
-              ),
+              child: _appointments.isEmpty
+                  ? const Center(
+                      child: Text(
+                        "لا يوجد مواعيد حالياً.",
+                        style: TextStyle(
+                          fontFamily: 'Cairo',
+                          fontSize: 16,
+                          color: AppColors.lightGrey,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    )
+                  : ListView.builder(
+                      itemCount: _appointments.length,
+                      itemBuilder: (context, index) {
+                        return _AppointmentItemCard(
+                          appointment: _appointments[index],
+                        );
+                      },
+                    ),
             ),
           ],
         ),
       ),
       floatingActionButton: Padding(
-        // FloatingActionButton (as you provided)
-        padding: const EdgeInsets.only(bottom: 50.0),
+        padding: const EdgeInsets.only(
+          bottom: 50.0,
+        ), // Adjusted padding if bottom bar is tall
         child: FloatingActionButton(
           onPressed: () {
             // TODO: Action for AI Mama FAB
@@ -225,12 +235,12 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
             radius: 26,
             backgroundColor: Colors.transparent,
             child: SvgPicture.asset(
-              'assets/images/Subscription_mama.svg',
+              'assets/images/Subscription_mama.svg', // Ensure this asset exists
               width: 52,
               height: 52,
               fit: BoxFit.cover,
               placeholderBuilder: (context) => const Icon(
-                Icons.person,
+                Icons.person, // Fallback icon
                 size: 30,
                 color: AppColors.primaryRed,
               ),
@@ -238,9 +248,9 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
           ),
         ),
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+      floatingActionButtonLocation: FloatingActionButtonLocation
+          .endFloat, // Keep as is for RTL consistency if FAB is on left
       bottomNavigationBar: BottomNavigationBar(
-        // BottomNavigationBar (as you provided)
         currentIndex: _bottomNavIndex,
         onTap: (index) {
           setState(() {
@@ -271,7 +281,9 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
             label: "المتجر",
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.home_outlined),
+            icon: Icon(
+              Icons.home_outlined,
+            ), // This should be "الرئيسية" or "مواعيدي"
             label: "الرئيسية",
           ),
           BottomNavigationBarItem(
@@ -288,7 +300,6 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
   }
 }
 
-// _AppointmentItemCard class (as you provided, with minor color fix for errorBuilder)
 class _AppointmentItemCard extends StatelessWidget {
   final AppointmentInfo appointment;
 
@@ -299,20 +310,19 @@ class _AppointmentItemCard extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.only(bottom: 12.0),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
-      color:
-          AppColors.cardBackground ??
-          AppColors.white, // Added null check for safety
+      color: AppColors.cardBackground,
       elevation: 1.5,
       child: Padding(
         padding: const EdgeInsets.all(12.0),
         child: Row(
-          textDirection: TextDirection.rtl,
+          textDirection: TextDirection.rtl, // Ensures layout is RTL
           children: [
             Stack(
               children: [
                 ClipRRect(
                   borderRadius: BorderRadius.circular(8.0),
                   child: Image.asset(
+                    // Assuming avatarAsset is a local asset path
                     appointment.avatarAsset,
                     width: 60,
                     height: 60,
@@ -320,8 +330,10 @@ class _AppointmentItemCard extends StatelessWidget {
                     errorBuilder: (context, error, stackTrace) => Container(
                       width: 60,
                       height: 60,
-                      color: AppColors
-                          .chipText, // Changed from AppColors.chipText to AppColors.lightGrey for better placeholder
+                      decoration: BoxDecoration(
+                        color: AppColors.chipText, // Better placeholder color
+                        borderRadius: BorderRadius.circular(8.0),
+                      ),
                       child: const Icon(
                         Icons.person,
                         color: AppColors.white,
@@ -332,8 +344,8 @@ class _AppointmentItemCard extends StatelessWidget {
                 ),
                 if (appointment.isOnline)
                   Positioned(
-                    top: 2,
-                    right: 2,
+                    top: 2, // Adjust position as needed
+                    right: 2, // Adjust position as needed
                     child: Container(
                       width: 10,
                       height: 10,
@@ -349,7 +361,8 @@ class _AppointmentItemCard extends StatelessWidget {
             const SizedBox(width: 12),
             Expanded(
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment:
+                    CrossAxisAlignment.start, // Aligns text to the right in RTL
                 children: [
                   Text(
                     appointment.doctorName,
@@ -366,7 +379,7 @@ class _AppointmentItemCard extends StatelessWidget {
                     style: const TextStyle(
                       fontFamily: 'Cairo',
                       fontSize: 12,
-                      color: AppColors.lightGrey,
+                      color: AppColors.lightGrey, // Original color
                     ),
                   ),
                   const SizedBox(height: 6),
@@ -376,30 +389,27 @@ class _AppointmentItemCard extends StatelessWidget {
                       vertical: 3.0,
                     ),
                     decoration: BoxDecoration(
-                      color:
-                          AppColors.chipBackground ??
-                          AppColors.primaryRed, // Added null check for safety
+                      color: AppColors.chipBackground,
                       borderRadius: BorderRadius.circular(6.0),
                     ),
                     child: Text(
+                      // Displaying actual time slot
                       appointment.timeSlot,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontFamily: 'Cairo',
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
-                        color:
-                            AppColors.chipText ??
-                            AppColors.primaryRed, // Added null check for safety
+                        color: AppColors.chipText,
                       ),
                     ),
                   ),
                 ],
               ),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 12), // Spacing before the delete button
             Container(
-              width: 55, // Kept your dimensions
-              height: 30, // Kept your dimensions
+              width: 55,
+              height: 30,
               decoration: BoxDecoration(
                 color: AppColors.primaryRed,
                 borderRadius: BorderRadius.circular(8.0),
@@ -411,10 +421,11 @@ class _AppointmentItemCard extends StatelessWidget {
                   size: 22,
                 ),
                 onPressed: () {
-                  // TODO: Implement delete action
+                  // TODO: Implement delete action for the appointment
                 },
                 padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(),
+                constraints:
+                    const BoxConstraints(), // To make icon fill the container
               ),
             ),
           ],

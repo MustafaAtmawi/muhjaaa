@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:muhjaaa/cubits/auth/auth_cubit.dart';
-import 'package:muhjaaa/screens/chat_list_screen.dart'; // Example home screen
+import 'package:muhjaaa/screens/chat_list_screen.dart';
 import 'package:muhjaaa/utils/app_colors.dart';
 import 'package:muhjaaa/widgets/custom_text_form_field.dart';
 
@@ -52,14 +52,10 @@ class _SignupScreenState extends State<SignupScreen> {
       body: BlocConsumer<AuthCubit, AuthState>(
         listener: (context, state) {
           if (state is Authenticated) {
-            // Navigate to home screen on successful signup and authentication
             Navigator.of(context).pushReplacement(
-              MaterialPageRoute(
-                builder: (_) => const ChatListScreen(),
-              ), // Or your main app screen
+              MaterialPageRoute(builder: (_) => const ChatListScreen()),
             );
           } else if (state is AuthFailure) {
-            // Show error message
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(state.message, textAlign: TextAlign.right),
@@ -102,20 +98,28 @@ class _SignupScreenState extends State<SignupScreen> {
                             CustomTextFormField(
                               controller: _usernameController,
                               labelText: 'اسم المستخدم',
-                              prefixIcon: SvgPicture.asset(
-                                'assets/icons/Person.svg',
-                                width: 20,
-                                height: 20,
-                                colorFilter: const ColorFilter.mode(
-                                  AppColors.darkGreyText,
-                                  BlendMode.srcIn,
+                              prefixIcon: Padding(
+                                // Added padding
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12.0,
+                                ),
+                                child: SvgPicture.asset(
+                                  'assets/icons/Person.svg',
+                                  width: 20,
+                                  height: 20,
+                                  colorFilter: const ColorFilter.mode(
+                                    AppColors.darkGreyText,
+                                    BlendMode.srcIn,
+                                  ),
                                 ),
                               ),
                               validator: (value) {
-                                if (value == null || value.isEmpty)
+                                if (value == null || value.isEmpty) {
                                   return 'الرجاء إدخال اسم المستخدم';
-                                if (value.length < 3)
+                                }
+                                if (value.length < 3) {
                                   return 'يجب أن لا يقل عن ٣ أحرف';
+                                }
                                 return null;
                               },
                             ),
@@ -124,18 +128,24 @@ class _SignupScreenState extends State<SignupScreen> {
                               controller: _emailController,
                               labelText: 'البريد الالكتروني',
                               keyboardType: TextInputType.emailAddress,
-                              prefixIcon: const Icon(
-                                Icons.email_outlined,
-                                color: AppColors.darkGreyText,
-                                size: 22,
+                              prefixIcon: const Padding(
+                                // Added padding
+                                padding: EdgeInsets.symmetric(horizontal: 12.0),
+                                child: Icon(
+                                  Icons.email_outlined,
+                                  color: AppColors.darkGreyText,
+                                  size: 22,
+                                ),
                               ),
                               validator: (value) {
-                                if (value == null || value.isEmpty)
+                                if (value == null || value.isEmpty) {
                                   return 'الرجاء إدخال البريد الإلكتروني';
+                                }
                                 if (!RegExp(
                                   r'^[^@]+@[^@]+\.[^@]+',
-                                ).hasMatch(value))
+                                ).hasMatch(value)) {
                                   return 'الرجاء إدخال بريد إلكتروني صحيح';
+                                }
                                 return null;
                               },
                             ),
@@ -146,20 +156,28 @@ class _SignupScreenState extends State<SignupScreen> {
                                   child: CustomTextFormField(
                                     controller: _firstNameController,
                                     labelText: 'الاسم الأول',
-                                    prefixIcon: SvgPicture.asset(
-                                      'assets/icons/Person.svg',
-                                      width: 20,
-                                      height: 20,
-                                      colorFilter: const ColorFilter.mode(
-                                        AppColors.darkGreyText,
-                                        BlendMode.srcIn,
+                                    prefixIcon: Padding(
+                                      // Added padding
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 12.0,
+                                      ),
+                                      child: SvgPicture.asset(
+                                        'assets/icons/Person.svg',
+                                        width: 20,
+                                        height: 20,
+                                        colorFilter: const ColorFilter.mode(
+                                          AppColors.darkGreyText,
+                                          BlendMode.srcIn,
+                                        ),
                                       ),
                                     ),
                                     validator: (value) {
-                                      if (value == null || value.isEmpty)
+                                      if (value == null || value.isEmpty) {
                                         return 'الرجاء إدخال الاسم الأول';
-                                      if (value.length < 2)
-                                        return 'يجب أن لا يقل عن حرفين'; // Adjusted
+                                      }
+                                      if (value.length < 2) {
+                                        return 'يجب أن لا يقل عن حرفين';
+                                      }
                                       return null;
                                     },
                                   ),
@@ -169,20 +187,28 @@ class _SignupScreenState extends State<SignupScreen> {
                                   child: CustomTextFormField(
                                     controller: _lastNameController,
                                     labelText: 'اسم العائلة',
-                                    prefixIcon: SvgPicture.asset(
-                                      'assets/icons/Person.svg',
-                                      width: 20,
-                                      height: 20,
-                                      colorFilter: const ColorFilter.mode(
-                                        AppColors.darkGreyText,
-                                        BlendMode.srcIn,
+                                    prefixIcon: Padding(
+                                      // Added padding
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 12.0,
+                                      ),
+                                      child: SvgPicture.asset(
+                                        'assets/icons/Person.svg',
+                                        width: 20,
+                                        height: 20,
+                                        colorFilter: const ColorFilter.mode(
+                                          AppColors.darkGreyText,
+                                          BlendMode.srcIn,
+                                        ),
                                       ),
                                     ),
                                     validator: (value) {
-                                      if (value == null || value.isEmpty)
+                                      if (value == null || value.isEmpty) {
                                         return 'الرجاء إدخال اسم العائلة';
-                                      if (value.length < 2)
-                                        return 'يجب أن لا يقل عن حرفين'; // Adjusted
+                                      }
+                                      if (value.length < 2) {
+                                        return 'يجب أن لا يقل عن حرفين';
+                                      }
                                       return null;
                                     },
                                   ),
@@ -194,13 +220,19 @@ class _SignupScreenState extends State<SignupScreen> {
                               controller: _passwordController,
                               labelText: 'كلمة المرور',
                               obscureText: !_isPasswordVisible,
-                              prefixIcon: SvgPicture.asset(
-                                'assets/icons/Lock-icon.svg',
-                                width: 20,
-                                height: 20,
-                                colorFilter: const ColorFilter.mode(
-                                  AppColors.darkGreyText,
-                                  BlendMode.srcIn,
+                              prefixIcon: Padding(
+                                // Added padding
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12.0,
+                                ),
+                                child: SvgPicture.asset(
+                                  'assets/icons/Lock-icon.svg',
+                                  width: 20,
+                                  height: 20,
+                                  colorFilter: const ColorFilter.mode(
+                                    AppColors.darkGreyText,
+                                    BlendMode.srcIn,
+                                  ),
                                 ),
                               ),
                               suffixIcon: IconButton(
@@ -217,12 +249,12 @@ class _SignupScreenState extends State<SignupScreen> {
                                 ),
                               ),
                               validator: (value) {
-                                if (value == null || value.isEmpty)
+                                if (value == null || value.isEmpty) {
                                   return 'الرجاء إدخال كلمة المرور';
-                                if (value.length < 6)
+                                }
+                                if (value.length < 6) {
                                   return 'كلمة المرور يجب أن لا تقل عن 6 أحرف';
-                                // if (!RegExp(r'(?=.*[A-Z])').hasMatch(value)) return 'يجب أن تحتوي كلمة المرور على حرف كبير واحد على الأقل';
-                                // if (!RegExp(r'(?=.*[!@#\$%^&*(),.?":{}|<>])').hasMatch(value)) return 'يجب أن تحتوي كلمة المرور على رمز واحد على الأقل';
+                                }
                                 return null;
                               },
                             ),
@@ -273,7 +305,7 @@ class _SignupScreenState extends State<SignupScreen> {
                                     horizontal: 16,
                                   ),
                                   child: Text(
-                                    'أو أكمل بواسطة', // "Or Continue with"
+                                    'أو أكمل بواسطة',
                                     style: TextStyle(
                                       fontFamily: 'Cairo',
                                       color: AppColors.darkGreyText,
@@ -297,8 +329,7 @@ class _SignupScreenState extends State<SignupScreen> {
                                   onTap: isLoading
                                       ? null
                                       : () {
-                                          /* TODO: Google signup */
-                                          print("Google signup tapped");
+                                          // print("Google signup tapped");
                                         },
                                   child: SvgPicture.asset(
                                     'assets/icons/Google.svg',
@@ -311,8 +342,7 @@ class _SignupScreenState extends State<SignupScreen> {
                                   onTap: isLoading
                                       ? null
                                       : () {
-                                          /* TODO: Facebook signup */
-                                          print("Facebook signup tapped");
+                                          // print("Facebook signup tapped");
                                         },
                                   child: SvgPicture.asset(
                                     'assets/icons/Facebook.svg',
@@ -326,9 +356,7 @@ class _SignupScreenState extends State<SignupScreen> {
                             GestureDetector(
                               onTap: isLoading
                                   ? null
-                                  : () => Navigator.pop(
-                                      context,
-                                    ), // Go back to Login
+                                  : () => Navigator.pop(context),
                               child: RichText(
                                 textAlign: TextAlign.center,
                                 text: const TextSpan(

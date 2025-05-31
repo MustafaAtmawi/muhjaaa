@@ -43,10 +43,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
             bottom: MediaQuery.of(sheetContext).viewInsets.bottom,
           ),
           child: Container(
-            padding: const EdgeInsets.only(
-              top: 10,
-              bottom: 10,
-            ), // Reduced top/bottom overall padding
+            padding: const EdgeInsets.only(top: 10, bottom: 10),
             decoration: const BoxDecoration(
               color: AppColors.white,
               borderRadius: BorderRadius.only(
@@ -59,7 +56,6 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: <Widget>[
                 Container(
-                  // Draggable indicator
                   width: 40,
                   height: 5,
                   margin: const EdgeInsets.only(bottom: 8.0),
@@ -68,18 +64,13 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
-
-                // Stack for the Icon and "عودة" button
                 SizedBox(
                   width: double.infinity,
                   child: Stack(
                     alignment: Alignment.topCenter,
                     children: [
-                      // Layer 1: Red Circle Icon (will be behind "عودة")
                       Padding(
-                        padding: const EdgeInsets.only(
-                          top: 5.0,
-                        ), // Adjust top padding to position circle
+                        padding: const EdgeInsets.only(top: 5.0),
                         child: const CircleAvatar(
                           radius: 35,
                           backgroundColor: AppColors.primaryRed,
@@ -90,13 +81,9 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                           ),
                         ),
                       ),
-
-                      // Layer 2: "عودة" button, positioned on top right (visual left in RTL)
                       Positioned(
                         top: 0,
-                        right:
-                            13, // For RTL, this means it aligns to the visual left edge of the Stack/Container
-                        // The parent Container's padding will give it distance from screen edge
+                        right: 13,
                         child: TextButton.icon(
                           style: TextButton.styleFrom(
                             padding: EdgeInsets.zero,
@@ -119,21 +106,13 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                           onPressed: () {
                             Navigator.of(sheetContext).pop();
                           },
-                        ), // Close the sheet
+                        ),
                       ),
                     ],
                   ),
                 ),
-
-                // Title - Placed UNDER the Stack (which contains the icon)
                 Padding(
-                  // This padding makes the title and subsequent text more inset
-                  padding: const EdgeInsets.fromLTRB(
-                    24,
-                    5,
-                    24,
-                    0,
-                  ), // Top padding is from bottom of stack content
+                  padding: const EdgeInsets.fromLTRB(24, 5, 24, 0),
                   child: const Text(
                     'شروط وأحكام الاشتراك في مهجة',
                     textAlign: TextAlign.center,
@@ -146,12 +125,8 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                   ),
                 ),
                 const SizedBox(height: 8),
-
-                // Inner padding for the main terms content to make it "ل جوا اكتر"
                 Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 28.0,
-                  ), // Increased horizontal padding for inset
+                  padding: const EdgeInsets.symmetric(horizontal: 28.0),
                   child: Column(
                     children: [
                       const Text(
@@ -194,12 +169,8 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                   ),
                 ),
                 const SizedBox(height: 24),
-
-                // "أوافق" button - padding controlled by this Padding widget
                 Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16.0,
-                  ), // This makes it fairly wide
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primaryRed,
@@ -312,7 +283,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
               );
             } else if (state is SubscriptionSuccess) {
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
+                const SnackBar(
                   content: Text(
                     "تم الاشتراك بنجاح!",
                     textAlign: TextAlign.right,
@@ -366,7 +337,9 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                             height: MediaQuery.of(context).size.height * 0.12,
                           ),
                           const Spacer(),
-                          SizedBox(width: 40),
+                          const SizedBox(
+                            width: 40,
+                          ), // To balance the IconButton
                         ],
                       ),
                       const SizedBox(height: 25),
@@ -473,10 +446,12 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                                   ),
                                 );
                               } else {
+                                // This case might occur if plans are still loading but state hasn't updated _selectedPlanId yet.
+                                // Or if plans are empty from the start.
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
                                     content: Text(
-                                      "الرجاء الانتظار لتحميل الخطط أولاً.",
+                                      "الرجاء اختيار خطة أو الانتظار لتحميل الخطط أولاً.",
                                       textAlign: TextAlign.right,
                                     ),
                                     backgroundColor: Colors.orange,

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_svg/flutter_svg.dart'; // Ensure this is imported
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:muhjaaa/cubits/chat/conversation_cubit.dart';
 import 'package:muhjaaa/models/message_model.dart';
 import 'package:muhjaaa/utils/app_colors.dart';
@@ -69,7 +69,6 @@ class _AiMamaChatScreenState extends State<AiMamaChatScreen> {
     return Scaffold(
       backgroundColor: AppColors.white,
       appBar: PreferredSize(
-        // AppBar remains the same as your last version of AiMamaChatScreen
         preferredSize: const Size.fromHeight(60.0),
         child: AppBar(
           backgroundColor: AppColors.white,
@@ -103,7 +102,7 @@ class _AiMamaChatScreenState extends State<AiMamaChatScreen> {
                 backgroundColor: Colors.transparent,
                 child: ClipOval(
                   child: SvgPicture.asset(
-                    'assets/images/Ai_Mama.svg', //
+                    'assets/images/Ai_Mama.svg',
                     width: 32,
                     height: 32,
                     fit: BoxFit.cover,
@@ -146,7 +145,7 @@ class _AiMamaChatScreenState extends State<AiMamaChatScreen> {
                 size: 24,
               ),
               onPressed: () {
-                print("Share/Upload button tapped");
+                // print("Share/Upload button tapped");
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
                     content: Text(
@@ -162,7 +161,6 @@ class _AiMamaChatScreenState extends State<AiMamaChatScreen> {
         ),
       ),
       body: Column(
-        // Wrapped body content in a Column to place input bar at bottom
         children: [
           Expanded(
             child: BlocConsumer<ConversationCubit, ConversationState>(
@@ -240,7 +238,7 @@ class _AiMamaChatScreenState extends State<AiMamaChatScreen> {
                       .messages
                       .last
                       .senderType ==
-                  SenderType.me) // Condition for "ماما مهجة تكتب..."
+                  SenderType.me)
             const Padding(
               padding: EdgeInsets.symmetric(vertical: 8.0),
               child: Row(
@@ -266,7 +264,6 @@ class _AiMamaChatScreenState extends State<AiMamaChatScreen> {
                 ],
               ),
             ),
-          // Copied Text Input Section from ConversationScreen.dart
           Material(
             elevation: 8.0,
             color: Colors.white,
@@ -279,101 +276,100 @@ class _AiMamaChatScreenState extends State<AiMamaChatScreen> {
               ),
               child: Container(
                 decoration: BoxDecoration(
-                  color: AppColors.searchBarBg, //
-                  borderRadius: BorderRadius.circular(30.0), //
+                  color: AppColors.searchBarBg,
+                  borderRadius: BorderRadius.circular(30.0),
                 ),
-                padding: const EdgeInsets.symmetric(horizontal: 8.0), //
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
                 child: Row(
                   children: [
-                    const SizedBox(width: 8), //
+                    const SizedBox(width: 8),
                     Expanded(
                       child: TextField(
-                        controller:
-                            _messageController, // References _messageController from _AiMamaChatScreenState
-                        textAlign: TextAlign.right, //
+                        controller: _messageController,
+                        textAlign: TextAlign.right,
                         decoration: const InputDecoration(
-                          hintText:
-                              'اكتب رسالة...', // Hint text from ConversationScreen
+                          hintText: 'اكتب رسالة...',
                           hintStyle: TextStyle(
-                            fontFamily: 'Cairo', //
-                            fontSize: 15, //
-                            color: AppColors.lightGrey, //
+                            fontFamily: 'Cairo',
+                            fontSize: 15,
+                            color: AppColors.lightGrey,
                           ),
-                          border: InputBorder.none, //
-                          contentPadding: EdgeInsets.symmetric(vertical: 10), //
+                          border: InputBorder.none,
+                          contentPadding: EdgeInsets.symmetric(vertical: 10),
                         ),
                         style: const TextStyle(
-                          fontFamily: 'Cairo', //
-                          fontSize: 15, //
-                          color: AppColors.darkGreyText, //
+                          fontFamily: 'Cairo',
+                          fontSize: 15,
+                          color: AppColors.darkGreyText,
                         ),
-                        minLines: 1, //
-                        maxLines: 4, //
-                        textInputAction: TextInputAction.send, //
-                        onSubmitted: (_) =>
-                            _sendMessage(), // References _sendMessage from _AiMamaChatScreenState
+                        minLines: 1,
+                        maxLines: 4,
+                        textInputAction: TextInputAction.send,
+                        onSubmitted: (_) => _sendMessage(),
                       ),
                     ),
-                    const SizedBox(width: 4), //
+                    const SizedBox(width: 4),
                     IconButton(
                       icon: SvgPicture.asset(
-                        'assets/icons/Insert_File.svg', // Path from ConversationScreen - WARNING: This asset is missing
+                        'assets/icons/Insert_File.svg',
                         width: 26,
                         height: 26,
-                        colorFilter: ColorFilter.mode(
-                          AppColors.darkGreyText.withOpacity(0.7),
+                        colorFilter: const ColorFilter.mode(
+                          Color.fromRGBO(
+                            100,
+                            99,
+                            99,
+                            0.7,
+                          ), // AppColors.darkGreyText.withOpacity(0.7)
                           BlendMode.srcIn,
                         ),
                         errorBuilder: (context, error, stackTrace) =>
                             const Icon(
-                              // Fallback from ConversationScreen
                               Icons.attach_file,
                               color: AppColors.darkGreyText,
                             ),
                       ),
                       onPressed: () {
-                        /* TODO: Implement attachment logic */ //
-                        print("Attach file tapped"); //
+                        // print("Attach file tapped");
                       },
-                      padding: EdgeInsets.zero, //
-                      constraints: const BoxConstraints(), //
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
                     ),
                     IconButton(
                       icon: SvgPicture.asset(
-                        'assets/icons/Insert_Image.svg', // Path from ConversationScreen - WARNING: This asset is missing
+                        'assets/icons/Insert_Image.svg',
                         width: 26,
                         height: 26,
-                        colorFilter: ColorFilter.mode(
-                          AppColors.darkGreyText.withOpacity(0.7),
+                        colorFilter: const ColorFilter.mode(
+                          Color.fromRGBO(
+                            100,
+                            99,
+                            99,
+                            0.7,
+                          ), // AppColors.darkGreyText.withOpacity(0.7)
                           BlendMode.srcIn,
                         ),
                         errorBuilder: (context, error, stackTrace) =>
                             const Icon(
-                              // Fallback from ConversationScreen
                               Icons.image_outlined,
                               color: AppColors.darkGreyText,
                             ),
                       ),
                       onPressed: () {
-                        /* TODO: Implement image insertion logic */ //
-                        print("Insert image tapped"); //
+                        // print("Insert image tapped");
                       },
-                      padding: EdgeInsets.zero, //
-                      constraints: const BoxConstraints(), //
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
                     ),
                     IconButton(
                       icon: SvgPicture.asset(
-                        'assets/icons/Send_message.svg', // Path from ConversationScreen, this asset exists
+                        'assets/icons/Send_message.svg',
                         errorBuilder: (context, error, stackTrace) =>
-                            const Icon(
-                              Icons.send,
-                              color: AppColors.primaryRed,
-                            ), // Fallback from ConversationScreen
+                            const Icon(Icons.send, color: AppColors.primaryRed),
                       ),
-                      onPressed:
-                          _sendMessage, // References _sendMessage from _AiMamaChatScreenState
-                      padding: EdgeInsets.zero, //
-                      constraints: const BoxConstraints(), //
+                      onPressed: _sendMessage,
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
                     ),
                   ],
                 ),

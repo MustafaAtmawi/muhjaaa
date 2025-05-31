@@ -1,15 +1,12 @@
 import 'package:muhjaaa/models/subscription_plan_model.dart';
 import 'package:muhjaaa/repositories/failure.dart';
-import 'auth_repository.dart'; // For FutureEither type
+import 'package:muhjaaa/utils/either.dart'; // For FutureEither type
 
 class SubscriptionRepository {
   FutureEither<List<SubscriptionPlanModel>> getSubscriptionPlans() async {
-    // TODO: Implement actual API call
-    print('SubscriptionRepository: Fetching subscription plans');
     await Future.delayed(const Duration(seconds: 1));
 
     final List<SubscriptionPlanModel> mockPlans = [
-      // Changed to List<SubscriptionPlanModel>
       const SubscriptionPlanModel(
         id: 'yearly_plan_01',
         title: 'إشتراك سنوي',
@@ -27,14 +24,10 @@ class SubscriptionRepository {
         isYearly: false,
       ),
     ];
-    return Right(mockPlans); // Return const Right if mockPlans is const
+    return Right(mockPlans);
   }
 
   FutureEither<bool> subscribeToPlan(String planId, String paymentToken) async {
-    // TODO: Implement actual API call to subscribe user to a plan
-    print(
-      'SubscriptionRepository: Subscribing to plan $planId with payment token $paymentToken',
-    );
     await Future.delayed(const Duration(seconds: 2));
 
     if (planId.isNotEmpty && paymentToken.isNotEmpty) {

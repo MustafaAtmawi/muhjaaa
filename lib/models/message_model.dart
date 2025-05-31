@@ -1,14 +1,16 @@
 import 'package:equatable/equatable.dart';
-import 'package:muhjaaa/widgets/message_bubble.dart'; // Assuming SenderType is here
+
+// SenderType enum moved here from message_bubble.dart
+enum SenderType { me, otherParty, aiMama }
 
 class MessageModel extends Equatable {
   final String id;
   final String text;
-  final SenderType senderType; // Using the existing enum
-  final String senderId; // ID of the user who sent the message
+  final SenderType senderType;
+  final String senderId;
   final DateTime timestamp;
-  final String? avatarInitial; // For user/doctor placeholder
-  final String? avatarAssetPath; // For AI Mama image
+  final String? avatarInitial;
+  final String? avatarAssetPath;
 
   const MessageModel({
     required this.id,
@@ -20,20 +22,16 @@ class MessageModel extends Equatable {
     this.avatarAssetPath,
   });
 
-  // Example: Factory constructor from JSON (you'll adapt this to your API)
   factory MessageModel.fromJson(Map<String, dynamic> json) {
-    // Determine SenderType based on API data (e.g., senderId or a dedicated field)
     SenderType determinedSenderType;
     if (json['senderType'] != null) {
       determinedSenderType = SenderType.values.firstWhere(
         (e) => e.toString() == 'SenderType.${json['senderType']}',
-        orElse: () => SenderType.otherParty, // Default or error handling
+        orElse: () => SenderType.otherParty,
       );
     } else if (json['senderId'] == 'ai_mama_id') {
-      // Example logic
       determinedSenderType = SenderType.aiMama;
     } else if (json['senderId'] == 'current_user_id_placeholder') {
-      // Example logic
       determinedSenderType = SenderType.me;
     } else {
       determinedSenderType = SenderType.otherParty;

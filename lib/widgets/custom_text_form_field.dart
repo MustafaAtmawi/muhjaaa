@@ -3,9 +3,9 @@ import 'package:muhjaaa/utils/app_colors.dart';
 
 class CustomTextFormField extends StatefulWidget {
   final TextEditingController controller;
-  final String? labelText; // Made labelText optional
-  final String? hintText; // Added hintText
-  final Widget? prefixIcon; // Made prefixIcon optional
+  final String? labelText;
+  final String? hintText;
+  final Widget? prefixIcon;
   final Widget? suffixIcon;
   final String? Function(String?)? validator;
   final bool obscureText;
@@ -18,9 +18,9 @@ class CustomTextFormField extends StatefulWidget {
   const CustomTextFormField({
     super.key,
     required this.controller,
-    this.labelText, // Now optional
-    this.hintText, // New
-    this.prefixIcon, // Now optional
+    this.labelText,
+    this.hintText,
+    this.prefixIcon,
     this.suffixIcon,
     this.validator,
     this.obscureText = false,
@@ -37,55 +37,45 @@ class CustomTextFormField extends StatefulWidget {
 
 class _CustomTextFormFieldState extends State<CustomTextFormField> {
   final FocusNode _focusNode = FocusNode();
-  String? _currentErrorText;
+  // String? _currentErrorText; // Managed by autovalidateMode
 
   @override
   void initState() {
     super.initState();
     _focusNode.addListener(_onFocusChange);
-    widget.controller.addListener(_onTextChanged);
+    // widget.controller.addListener(_onTextChanged); // Not strictly needed with autovalidate
   }
 
   @override
   void dispose() {
     _focusNode.removeListener(_onFocusChange);
     _focusNode.dispose();
-    widget.controller.removeListener(_onTextChanged);
+    // widget.controller.removeListener(_onTextChanged);
     super.dispose();
   }
 
   void _onFocusChange() {
-    if (!_focusNode.hasFocus) {
-      if (mounted && _currentErrorText != null) {
-        // setState(() {
-        //   _currentErrorText = null; // Option: Clear live error on blur
-        // });
-      }
-    } else {
-      _validate();
-    }
     if (mounted) {
-      // Ensure floating label color updates on focus change
-      setState(() {});
+      setState(() {}); // To update floatingLabelStyle color
     }
   }
 
-  void _onTextChanged() {
-    if (_focusNode.hasFocus) {
-      _validate();
-    }
-  }
+  // void _onTextChanged() { // Not strictly needed with autovalidate
+  //   if (_focusNode.hasFocus) {
+  //     _validate();
+  //   }
+  // }
 
-  void _validate() {
-    if (widget.validator != null) {
-      final error = widget.validator!(widget.controller.text);
-      if (mounted && _currentErrorText != error) {
-        setState(() {
-          _currentErrorText = error;
-        });
-      }
-    }
-  }
+  // void _validate() { // Managed by autovalidateMode and validator
+  //   if (widget.validator != null) {
+  //     final error = widget.validator!(widget.controller.text);
+  //     if (mounted && _currentErrorText != error) {
+  //       setState(() {
+  //         _currentErrorText = error;
+  //       });
+  //     }
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -95,42 +85,36 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
       textAlign: widget.textAlign,
       obscureText: widget.obscureText,
       keyboardType: widget.keyboardType,
-      // Use validator for form-level validation, errorText for live feedback
       validator: widget.validator,
       onTap: widget.onTap,
       readOnly: widget.readOnly,
       maxLines: widget.maxLines,
-      autovalidateMode:
-          AutovalidateMode.onUserInteraction, // Validate on interaction
+      autovalidateMode: AutovalidateMode.onUserInteraction,
       style: const TextStyle(
         fontFamily: 'Cairo',
-        fontSize: 15.0, // Matched to design
+        fontSize: 15.0,
         color: AppColors.darkGreyText,
       ),
       decoration: InputDecoration(
-        labelText: widget.labelText, // Use labelText if provided
-        hintText: widget.hintText, // Use hintText if provided
+        labelText: widget.labelText,
+        hintText: widget.hintText,
         labelStyle: const TextStyle(
-          // Style for floating label
           fontFamily: 'Cairo',
           fontSize: 15.0,
           color: AppColors.lightGrey,
         ),
         hintStyle: const TextStyle(
-          // Style for hint text when field is empty
           fontFamily: 'Cairo',
           fontSize: 15.0,
           color: AppColors.lightGrey,
         ),
         floatingLabelStyle: TextStyle(
-          // Style for label when it floats (field has focus or text)
           fontFamily: 'Cairo',
           color: _focusNode.hasFocus
               ? AppColors.primaryRed
               : AppColors.lightGrey,
-          fontSize: 17.0, // Slightly larger when floating
+          fontSize: 17.0,
         ),
-        // errorText: _currentErrorText, // Using autovalidate mode handles this better
         errorStyle: const TextStyle(
           fontFamily: 'Cairo',
           color: Colors.redAccent,
@@ -141,25 +125,32 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
                 padding: const EdgeInsets.symmetric(horizontal: 12.0),
                 child: widget.prefixIcon,
               )
-            : null, // Only add padding if prefixIcon exists
+            : null,
         prefixIconConstraints: widget.prefixIcon != null
             ? const BoxConstraints(minWidth: 24, minHeight: 24)
-            : const BoxConstraints(
-                minWidth: 0,
-                minHeight: 0,
-              ), // No constraints if no icon
+            : const BoxConstraints(minWidth: 0, minHeight: 0),
         suffixIcon: widget.suffixIcon,
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12.0), // Matched to design
-          borderSide: BorderSide(
-            color: AppColors.lightGrey.withOpacity(0.5),
+          borderRadius: BorderRadius.circular(12.0),
+          borderSide: const BorderSide(
+            color: Color.fromRGBO(
+              157,
+              189,
+              187,
+              0.5,
+            ), // AppColors.lightGrey.withOpacity(0.5)
             width: 1.0,
           ),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12.0),
-          borderSide: BorderSide(
-            color: AppColors.lightGrey.withOpacity(0.5),
+          borderSide: const BorderSide(
+            color: Color.fromRGBO(
+              157,
+              189,
+              187,
+              0.5,
+            ), // AppColors.lightGrey.withOpacity(0.5)
             width: 1.0,
           ),
         ),
@@ -175,10 +166,10 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
           borderRadius: BorderRadius.circular(12.0),
           borderSide: const BorderSide(color: Colors.redAccent, width: 1.5),
         ),
-        filled: true, // Added for background color
-        fillColor: AppColors.white, // Background color for text field
+        filled: true,
+        fillColor: AppColors.white,
         contentPadding: const EdgeInsets.symmetric(
-          vertical: 16.0, // Adjusted padding
+          vertical: 16.0,
           horizontal: 16.0,
         ),
         floatingLabelBehavior: widget.labelText != null
