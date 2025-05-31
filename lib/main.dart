@@ -154,11 +154,11 @@ class MyApp extends StatelessWidget {
             builder: (context, state) {
               if (state is Authenticated) {
                 // Per your original code, though this might be LoginScreen() or a typo for ChatListScreen()
-                return const LoginScreen();
+                return const ChatListScreen();
               }
               if (state is Unauthenticated || state is AuthFailure) {
                 // Per your original code
-                return const ChatListScreen();
+                return const LoginScreen();
               }
               return const Scaffold(
                 backgroundColor: AppColors.screenBackground,
