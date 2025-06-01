@@ -3,7 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:muhjaaa/utils/app_colors.dart';
 import 'package:muhjaaa/screens/signup_screen.dart';
 import 'package:muhjaaa/widgets/custom_text_form_field.dart';
-import 'package:muhjaaa/widgets/forgot_password_sheet_widget.dart';
+import 'package:muhjaaa/widgets/forgot_password_sheet.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -41,7 +41,7 @@ class _LoginScreenState extends State<LoginScreen> {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (BuildContext context) {
-        return const ForgotPasswordSheetWidget();
+        return const ForgotPasswordSheet();
       },
     );
   }
@@ -186,22 +186,22 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                   const SizedBox(height: 25),
-                  Row(
+                  const Row(
                     children: <Widget>[
-                      const Expanded(
+                      Expanded(
                         child: Divider(
                           color: AppColors.lightGrey,
                           thickness: 0.5,
                         ),
                       ),
                       Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                        padding: EdgeInsets.symmetric(horizontal: 10.0),
                         child: Text(
                           "أو سجل الدخول بواسطة",
                           style: TextStyle(
                             fontFamily: 'Cairo',
                             fontSize: 13.0,
-                            color: const Color.fromRGBO(
+                            color: Color.fromRGBO(
                               100,
                               99,
                               99,
@@ -211,7 +211,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ),
                       ),
-                      const Expanded(
+                      Expanded(
                         child: Divider(
                           color: AppColors.lightGrey,
                           thickness: 0.5,

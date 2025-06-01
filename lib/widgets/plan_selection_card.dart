@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:muhjaaa/utils/app_colors.dart';
+import 'package:muhjaaa/utils/app_colors.dart'; // Assuming AppColors is in this path
 
 class PlanSelectionCard extends StatelessWidget {
   final String title;
@@ -32,9 +32,10 @@ class PlanSelectionCard extends StatelessWidget {
             color: isSelected ? AppColors.primaryRed : Colors.transparent,
             width: 2,
           ),
-          boxShadow: [
+          boxShadow: const [
+            // Made const
             BoxShadow(
-              color: const Color.fromRGBO(
+              color: Color.fromRGBO(
                 0,
                 0,
                 0,
@@ -42,7 +43,7 @@ class PlanSelectionCard extends StatelessWidget {
               ), // Colors.black.withOpacity(0.1)
               spreadRadius: 1,
               blurRadius: 6,
-              offset: const Offset(0, 2),
+              offset: Offset(0, 2),
             ),
           ],
         ),
@@ -51,7 +52,9 @@ class PlanSelectionCard extends StatelessWidget {
           children: [
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.only(right: 0),
+                padding: const EdgeInsets.only(
+                  right: 0,
+                ), // Kept as is, assuming LTR context for padding here
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -75,7 +78,8 @@ class PlanSelectionCard extends StatelessWidget {
                         color: AppColors.darkGreyText,
                       ),
                     ),
-                    if (discountInfo != null)
+                    if (discountInfo !=
+                        null) // If there's a discount, show the RichText
                       RichText(
                         textAlign: TextAlign.start,
                         text: TextSpan(
@@ -94,21 +98,16 @@ class PlanSelectionCard extends StatelessWidget {
                             TextSpan(text: discountInfo),
                           ],
                         ),
-                      )
-                    else
-                      Text(
-                        totalPriceInfo,
-                        style: const TextStyle(
-                          fontFamily: 'Cairo',
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.mutedBlueGrey,
-                        ),
                       ),
+                    // The 'else' block that previously showed totalPriceInfo for non-discounted plans is now removed.
+                    // This ensures that if discountInfo is null (like for the monthly plan),
+                    // only the title and pricePerPeriod are shown above, achieving the two-line display.
                   ],
                 ),
               ),
             ),
+            // Radio button or check icon can go here if needed for selection indication
+            // For now, using border as per original logic.
           ],
         ),
       ),

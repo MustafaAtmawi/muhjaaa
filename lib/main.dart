@@ -93,7 +93,7 @@ class MyApp extends StatelessWidget {
                 return const ChatListScreen();
               }
               if (state is Unauthenticated || state is AuthFailure) {
-                return const MyAppointmentsScreen();
+                return const SubscriptionScreen();
               }
               return const Scaffold(
                 backgroundColor: AppColors.screenBackground,
