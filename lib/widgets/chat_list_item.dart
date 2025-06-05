@@ -8,7 +8,7 @@ class ChatListItem extends StatelessWidget {
   final String timestamp;
   final int unreadCount;
   final String placeholderLetter;
-  final String? avatarUrl; // Parameter for avatar URL
+  final String? avatarUrl;
   final VoidCallback? onTap;
 
   const ChatListItem({
@@ -19,14 +19,16 @@ class ChatListItem extends StatelessWidget {
     required this.timestamp,
     required this.unreadCount,
     required this.placeholderLetter,
-    this.avatarUrl, // Added 'avatarUrl' to the constructor
+    this.avatarUrl,
     this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
     Widget avatarDisplay;
-    if (avatarUrl != null && avatarUrl!.isNotEmpty) {
+    final bool hasAvatarUrl = avatarUrl != null && avatarUrl!.isNotEmpty;
+
+    if (hasAvatarUrl) {
       avatarDisplay = ClipOval(
         child: Image.network(
           avatarUrl!,
@@ -34,11 +36,15 @@ class ChatListItem extends StatelessWidget {
           height: 52,
           fit: BoxFit.cover,
           errorBuilder: (context, error, stackTrace) {
+            // Fallback for network image error
             return CircleAvatar(
               radius: 26,
-              backgroundColor: AppColors.mutedBlueGrey.withAlpha(
-                (0.7 * 255).round(),
-              ),
+              backgroundColor: const Color.fromRGBO(
+                154,
+                181,
+                189,
+                0.7,
+              ), // mutedBlueGrey with 0.7 opacity
               child: Text(
                 placeholderLetter.isNotEmpty
                     ? placeholderLetter[0].toUpperCase()
@@ -61,9 +67,12 @@ class ChatListItem extends StatelessWidget {
                 if (loadingProgress == null) return child;
                 return CircleAvatar(
                   radius: 26,
-                  backgroundColor: AppColors.mutedBlueGrey.withAlpha(
-                    (0.3 * 255).round(),
-                  ),
+                  backgroundColor: const Color.fromRGBO(
+                    154,
+                    181,
+                    189,
+                    0.3,
+                  ), // mutedBlueGrey with 0.3 opacity (placeholder bg)
                   child: Center(
                     child: CircularProgressIndicator(
                       value: loadingProgress.expectedTotalBytes != null
@@ -81,7 +90,12 @@ class ChatListItem extends StatelessWidget {
     } else {
       avatarDisplay = CircleAvatar(
         radius: 26,
-        backgroundColor: AppColors.mutedBlueGrey.withAlpha((0.7 * 255).round()),
+        backgroundColor: const Color.fromRGBO(
+          154,
+          181,
+          189,
+          0.7,
+        ), // mutedBlueGrey with 0.7 opacity
         child: Text(
           placeholderLetter.isNotEmpty
               ? placeholderLetter[0].toUpperCase()
@@ -102,17 +116,18 @@ class ChatListItem extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 12.0),
         decoration: BoxDecoration(
-          color: AppColors
-              .doctorChatItemBg, // Changed background color as requested
+          color: AppColors.doctorChatItemBg,
           borderRadius: BorderRadius.circular(12.0),
         ),
         child: Row(
+          textDirection: TextDirection.rtl, // Ensure overall row layout is RTL
           children: [
             avatarDisplay,
             const SizedBox(width: 12),
             Expanded(
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment
+                    .start, // Text aligns to start (right in RTL)
                 children: [
                   Text(
                     '$senderName - $senderRole',
@@ -124,6 +139,7 @@ class ChatListItem extends StatelessWidget {
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.right,
                   ),
                   const SizedBox(height: 4),
                   Text(
@@ -135,6 +151,7 @@ class ChatListItem extends StatelessWidget {
                       fontSize: 13,
                       color: AppColors.mutedBlueGrey,
                     ),
+                    textAlign: TextAlign.right,
                   ),
                 ],
               ),
@@ -142,7 +159,8 @@ class ChatListItem extends StatelessWidget {
             const SizedBox(width: 10),
             Column(
               mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.end,
+              crossAxisAlignment:
+                  CrossAxisAlignment.end, // Align to end (left in RTL)
               children: [
                 Text(
                   timestamp,
@@ -175,9 +193,9 @@ class ChatListItem extends StatelessWidget {
                   )
                 else
                   // Placeholder to maintain alignment if no unread count badge
-                  SizedBox(
+                  const SizedBox(
                     height: (10 + 3 + 3),
-                  ), // Approximate height of the badge
+                  ), // Approx height of badge
               ],
             ),
           ],

@@ -1,5 +1,5 @@
 import 'package:muhjaaa/models/chat_preview_model.dart';
-import 'package:muhjaaa/models/doctor_model.dart';
+import 'package:muhjaaa/models/doctor_model.dart'; // For SenderType and DoctorModel
 import 'package:muhjaaa/models/message_model.dart'; // For SenderType and MessageModel
 import 'package:muhjaaa/repositories/failure.dart';
 import 'package:muhjaaa/utils/either.dart'; // For FutureEither type and Either definition
@@ -36,12 +36,14 @@ class ChatRepository {
       const DoctorModel(
         id: 'doc1',
         name: 'د. أحمد',
+        specialty: 'طبيب عام', // MODIFIED: Added specialty
         placeholderLetter: 'أ',
         isActive: true,
       ),
       const DoctorModel(
         id: 'doc2',
         name: 'د. فاطمة',
+        specialty: 'اخصائية اطفال', // MODIFIED: Added specialty
         placeholderLetter: 'ف',
         isActive: true,
       ),
@@ -52,7 +54,7 @@ class ChatRepository {
   FutureEither<List<MessageModel>> getMessages(String conversationId) async {
     try {
       await Future.delayed(const Duration(seconds: 1));
-      const String currentUserId = "user123";
+      const String currentUserId = "user123"; // Placeholder
 
       if (conversationId == "ai_mama_chat") {
         final List<MessageModel> mockMessages = [
@@ -70,9 +72,9 @@ class ChatRepository {
             text:
                 'مرحباً مهجة، ابني عمره 7 شهور وبصحى كتير بالليل، تعبت جداً 😥',
             senderType: SenderType.me,
-            senderId: currentUserId,
+            senderId: currentUserId, // Use placeholder
             timestamp: DateTime.now().subtract(const Duration(minutes: 8)),
-            avatarInitial: 'أ',
+            avatarInitial: 'أ', // Placeholder initial for user
           ),
           MessageModel(
             id: 'msg3_ai',
@@ -86,28 +88,50 @@ class ChatRepository {
         ];
         return Right(mockMessages);
       } else if (conversationId == "chat1") {
+        // Example doctor chat
         final List<MessageModel> mockMessages = [
           MessageModel(
-            id: 'msg1_doc',
+            id: 'msg1_doc_chat1',
             text: 'مرحباً، كيف حال طفلك اليوم؟',
             senderType: SenderType.otherParty,
-            senderId: 'doc_karim_id',
+            senderId: 'doc1', // Matches active doctor ID
             timestamp: DateTime.now().subtract(const Duration(hours: 1)),
-            avatarInitial: 'ك',
+            avatarInitial: 'أ', // Matches active doctor placeholder
           ),
           MessageModel(
-            id: 'msg2_doc',
+            id: 'msg2_user_chat1',
             text: 'الحمد لله، لكن ما زال يعاني من بعض المغص.',
             senderType: SenderType.me,
             senderId: currentUserId,
             timestamp: DateTime.now().subtract(const Duration(minutes: 30)),
-            avatarInitial: 'أ',
+            avatarInitial: 'م', // Placeholder for user
           ),
         ];
         return Right(mockMessages);
       } else if (conversationId == "chat2") {
-        return const Right(<MessageModel>[]);
+        // Example other doctor chat
+        return const Right(<MessageModel>[]); // Start with empty chat
       }
+      // Add other conversation IDs if needed, like for the doctor_conv_doc1, etc.
+      // This part needs careful handling if you want dynamic conversation creation
+      // For simplicity, new doctor chats might start empty or with a welcome message.
+      else if (conversationId.startsWith("doctor_conv_")) {
+        // For new chats initiated from active doctors list, return empty or a placeholder message
+        // For example:
+        // final doctorId = conversationId.replaceFirst("doctor_conv_", "");
+        // return Right([
+        //   MessageModel(
+        //       id: 'welcome_${doctorId}',
+        //       text: 'مرحباً! كيف يمكنني مساعدتك اليوم؟',
+        //       senderType: SenderType.otherParty,
+        //       senderId: doctorId,
+        //       timestamp: DateTime.now(),
+        //       avatarInitial: 'د' // Generic or fetch specific doctor initial
+        //   )
+        // ]);
+        return const Right(<MessageModel>[]); // Default to empty for now
+      }
+
       return const Left(Failure("Conversation not found", statusCode: 404));
     } catch (e) {
       return Left(
@@ -124,14 +148,14 @@ class ChatRepository {
     String text,
   ) async {
     await Future.delayed(const Duration(milliseconds: 500));
-    const String currentUserId = "user123";
+    const String currentUserId = "user123"; // Placeholder
     final MessageModel sentMessage = MessageModel(
       id: "msg-${DateTime.now().millisecondsSinceEpoch}",
       text: text,
       senderType: SenderType.me,
       senderId: currentUserId,
       timestamp: DateTime.now(),
-      avatarInitial: 'أ',
+      avatarInitial: 'م', // Placeholder for user
     );
     return Right(sentMessage);
   }

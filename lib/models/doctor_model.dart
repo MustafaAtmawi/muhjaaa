@@ -3,6 +3,7 @@ import 'package:equatable/equatable.dart';
 class DoctorModel extends Equatable {
   final String id;
   final String name;
+  final String specialty; // Added specialty field
   final String placeholderLetter;
   final String? avatarUrl; // Optional: if you have image URLs from backend
   final bool isActive;
@@ -10,6 +11,7 @@ class DoctorModel extends Equatable {
   const DoctorModel({
     required this.id,
     required this.name,
+    required this.specialty, // Added to constructor
     required this.placeholderLetter,
     this.avatarUrl,
     required this.isActive,
@@ -20,6 +22,7 @@ class DoctorModel extends Equatable {
     return DoctorModel(
       id: json['id'] as String,
       name: json['name'] as String,
+      specialty: json['specialty'] as String, // Added
       placeholderLetter: json['placeholderLetter'] as String,
       avatarUrl: json['avatarUrl'] as String?,
       isActive: json['isActive'] as bool,
@@ -31,6 +34,7 @@ class DoctorModel extends Equatable {
     return {
       'id': id,
       'name': name,
+      'specialty': specialty, // Added
       'placeholderLetter': placeholderLetter,
       'avatarUrl': avatarUrl,
       'isActive': isActive,
@@ -38,5 +42,12 @@ class DoctorModel extends Equatable {
   }
 
   @override
-  List<Object?> get props => [id, name, placeholderLetter, avatarUrl, isActive];
+  List<Object?> get props => [
+    id,
+    name,
+    specialty,
+    placeholderLetter,
+    avatarUrl,
+    isActive,
+  ];
 }

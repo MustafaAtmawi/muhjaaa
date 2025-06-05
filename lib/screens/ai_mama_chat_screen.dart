@@ -5,6 +5,7 @@ import 'package:muhjaaa/cubits/chat/conversation_cubit.dart';
 import 'package:muhjaaa/models/message_model.dart';
 import 'package:muhjaaa/utils/app_colors.dart';
 import 'package:muhjaaa/widgets/message_bubble.dart';
+import 'package:muhjaaa/widgets/chat_message_input_bar.dart'; // Import the shared widget
 
 class AiMamaChatScreen extends StatefulWidget {
   const AiMamaChatScreen({super.key});
@@ -16,13 +17,30 @@ class AiMamaChatScreen extends StatefulWidget {
 class _AiMamaChatScreenState extends State<AiMamaChatScreen> {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
-  bool _isSpeaking = false;
+  final FocusNode _inputFocusNode = FocusNode(); // Optional: for managing focus
+  bool _isSpeaking = false; // Local UI state for the speaker icon
 
   @override
   void initState() {
     super.initState();
+    // Fetch messages if not already loaded by cubit (e.g., if screen can be pushed directly)
+    // WidgetsBinding.instance.addPostFrameCallback((_) {
+    //   if (mounted) { // Check if cubit needs initial fetch if not handled by route generation
+    //      final cubit = context.read<ConversationCubit>();
+    //      if (cubit.state is ConversationInitial) { // Or some other suitable check
+    //          cubit.fetchMessages();
+    //      }
+    //      _scrollToBottom(animate: false);
+    //   }
+    // });
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _scrollToBottom(animate: false);
+      if (mounted) {
+        // Attempt to scroll only if there's content.
+        if (_scrollController.hasClients &&
+            _scrollController.position.hasContentDimensions) {
+          _scrollToBottom(animate: false);
+        }
+      }
     });
   }
 
@@ -30,42 +48,70 @@ class _AiMamaChatScreenState extends State<AiMamaChatScreen> {
   void dispose() {
     _messageController.dispose();
     _scrollController.dispose();
+    _inputFocusNode.dispose();
     super.dispose();
   }
 
   void _scrollToBottom({bool animate = true}) {
-    if (!_scrollController.hasClients) return;
-    if (!_scrollController.position.hasContentDimensions ||
-        _scrollController.position.maxScrollExtent == 0.0) {
+    if (!_scrollController.hasClients ||
+        !_scrollController.position.hasContentDimensions)
       return;
-    }
+
+    // Debounce or delay slightly if called rapidly, e.g. after keyboard shows
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted &&
           _scrollController.hasClients &&
           _scrollController.position.hasContentDimensions) {
+        final maxScroll = _scrollController.position.maxScrollExtent;
         if (animate) {
           _scrollController.animateTo(
-            _scrollController.position.maxScrollExtent,
+            maxScroll,
             duration: const Duration(milliseconds: 300),
             curve: Curves.easeOut,
           );
         } else {
-          _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
+          _scrollController.jumpTo(maxScroll);
         }
       }
     });
   }
 
   void _sendMessage() {
-    if (_messageController.text.trim().isEmpty) return;
-    context.read<ConversationCubit>().sendMessage(
-      _messageController.text.trim(),
-    );
+    final messageText = _messageController.text.trim();
+    if (messageText.isEmpty) return;
+    context.read<ConversationCubit>().sendMessage(messageText);
     _messageController.clear();
+    _inputFocusNode.requestFocus(); // Keep focus on input field after sending
+  }
+
+  // Placeholder actions for attach/insert image
+  void _onAttachFile() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text(
+          "Attach file action placeholder",
+          textAlign: TextAlign.right,
+        ),
+      ),
+    );
+  }
+
+  void _onInsertImage() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text(
+          "Insert image action placeholder",
+          textAlign: TextAlign.right,
+        ),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    // The ConversationCubit should be provided by the route in main.dart
+    // final conversationCubit = context.read<ConversationCubit>();
+
     return Scaffold(
       backgroundColor: AppColors.white,
       appBar: PreferredSize(
@@ -73,9 +119,11 @@ class _AiMamaChatScreenState extends State<AiMamaChatScreen> {
         child: AppBar(
           backgroundColor: AppColors.white,
           elevation: 0.5,
-          leadingWidth: 40,
+          leadingWidth: 40, // Adjusted for custom back button spacing
           leading: IconButton(
-            padding: const EdgeInsets.only(right: 8.0),
+            padding: const EdgeInsets.only(
+              right: 8.0,
+            ), // For RTL, back is on right
             icon: const Icon(
               Icons.arrow_back_ios,
               color: AppColors.darkGreyText,
@@ -84,7 +132,8 @@ class _AiMamaChatScreenState extends State<AiMamaChatScreen> {
             onPressed: () => Navigator.pop(context),
           ),
           title: Row(
-            mainAxisSize: MainAxisSize.min,
+            mainAxisSize:
+                MainAxisSize.min, // To keep content centered if possible
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const Text(
@@ -102,7 +151,7 @@ class _AiMamaChatScreenState extends State<AiMamaChatScreen> {
                 backgroundColor: Colors.transparent,
                 child: ClipOval(
                   child: SvgPicture.asset(
-                    'assets/images/Ai_Mama.svg',
+                    'assets/images/Ai_Mama.svg', // Ensure asset exists
                     width: 32,
                     height: 32,
                     fit: BoxFit.cover,
@@ -145,7 +194,6 @@ class _AiMamaChatScreenState extends State<AiMamaChatScreen> {
                 size: 24,
               ),
               onPressed: () {
-                // print("Share/Upload button tapped");
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
                     content: Text(
@@ -156,7 +204,7 @@ class _AiMamaChatScreenState extends State<AiMamaChatScreen> {
                 );
               },
             ),
-            const SizedBox(width: 4),
+            const SizedBox(width: 4), // Padding for the last icon
           ],
         ),
       ),
@@ -166,21 +214,24 @@ class _AiMamaChatScreenState extends State<AiMamaChatScreen> {
             child: BlocConsumer<ConversationCubit, ConversationState>(
               listener: (context, state) {
                 if (state is ConversationError) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(state.message, textAlign: TextAlign.right),
-                      backgroundColor: Colors.red,
-                    ),
-                  );
+                  ScaffoldMessenger.of(context)
+                    ..hideCurrentSnackBar()
+                    ..showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          state.message,
+                          textAlign: TextAlign.right,
+                        ),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
                 }
                 if (state is ConversationLoaded ||
                     state is ConversationSending) {
-                  if ((state is ConversationLoaded &&
-                          state.messages.isNotEmpty) ||
-                      (state is ConversationSending &&
-                          state.messages.isNotEmpty)) {
-                    _scrollToBottom();
-                  }
+                  // Scroll after messages are potentially updated
+                  WidgetsBinding.instance.addPostFrameCallback(
+                    (_) => _scrollToBottom(),
+                  );
                 }
               },
               builder: (context, state) {
@@ -188,7 +239,7 @@ class _AiMamaChatScreenState extends State<AiMamaChatScreen> {
                 if (state is ConversationLoaded) {
                   messages = state.messages;
                 } else if (state is ConversationSending) {
-                  messages = state.messages;
+                  messages = state.messages; // Show optimistic messages
                 } else if (state is ConversationError) {
                   messages = state.previousMessages;
                 }
@@ -230,151 +281,52 @@ class _AiMamaChatScreenState extends State<AiMamaChatScreen> {
               },
             ),
           ),
-          if (context.watch<ConversationCubit>().state is ConversationSending &&
-              (context.watch<ConversationCubit>().state as ConversationSending)
-                  .messages
-                  .isNotEmpty &&
-              (context.watch<ConversationCubit>().state as ConversationSending)
-                      .messages
-                      .last
-                      .senderType ==
-                  SenderType.me)
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 8.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  SizedBox(
-                    width: 12,
-                    height: 12,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: AppColors.primaryRed,
-                    ),
-                  ),
-                  SizedBox(width: 8),
-                  Text(
-                    "ماما مهجة تكتب...",
-                    style: TextStyle(
-                      fontFamily: 'Cairo',
-                      color: AppColors.lightGrey,
-                      fontSize: 12,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          Material(
-            elevation: 8.0,
-            color: Colors.white,
-            child: Padding(
-              padding: EdgeInsets.only(
-                left: 12.0,
-                right: 12.0,
-                top: 8.0,
-                bottom: 8.0 + MediaQuery.of(context).padding.bottom,
-              ),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: AppColors.searchBarBg,
-                  borderRadius: BorderRadius.circular(30.0),
-                ),
-                padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                child: Row(
-                  children: [
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: TextField(
-                        controller: _messageController,
-                        textAlign: TextAlign.right,
-                        decoration: const InputDecoration(
-                          hintText: 'اكتب رسالة...',
-                          hintStyle: TextStyle(
-                            fontFamily: 'Cairo',
-                            fontSize: 15,
-                            color: AppColors.lightGrey,
+          // "Typing" indicator logic (moved slightly for clarity if needed)
+          BlocBuilder<ConversationCubit, ConversationState>(
+            builder: (context, state) {
+              if (state is ConversationSending) {
+                // Check if the AI is "typing" (i.e., user just sent a message)
+                // This simple check assumes AI replies after user.
+                // A more robust way is a dedicated flag in ConversationState like `isAiTyping`.
+                if (state.messages.isNotEmpty &&
+                    state.messages.last.senderType == SenderType.me) {
+                  return const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 8.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        SizedBox(
+                          width: 12,
+                          height: 12,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: AppColors.primaryRed,
                           ),
-                          border: InputBorder.none,
-                          contentPadding: EdgeInsets.symmetric(vertical: 10),
                         ),
-                        style: const TextStyle(
-                          fontFamily: 'Cairo',
-                          fontSize: 15,
-                          color: AppColors.darkGreyText,
+                        SizedBox(width: 8),
+                        Text(
+                          "ماما مهجة تكتب...",
+                          style: TextStyle(
+                            fontFamily: 'Cairo',
+                            color: AppColors.lightGrey,
+                            fontSize: 12,
+                          ),
                         ),
-                        minLines: 1,
-                        maxLines: 4,
-                        textInputAction: TextInputAction.send,
-                        onSubmitted: (_) => _sendMessage(),
-                      ),
+                      ],
                     ),
-                    const SizedBox(width: 4),
-                    IconButton(
-                      icon: SvgPicture.asset(
-                        'assets/icons/Insert_File.svg',
-                        width: 26,
-                        height: 26,
-                        colorFilter: const ColorFilter.mode(
-                          Color.fromRGBO(
-                            100,
-                            99,
-                            99,
-                            0.7,
-                          ), // AppColors.darkGreyText.withOpacity(0.7)
-                          BlendMode.srcIn,
-                        ),
-                        errorBuilder: (context, error, stackTrace) =>
-                            const Icon(
-                              Icons.attach_file,
-                              color: AppColors.darkGreyText,
-                            ),
-                      ),
-                      onPressed: () {
-                        // print("Attach file tapped");
-                      },
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
-                    ),
-                    IconButton(
-                      icon: SvgPicture.asset(
-                        'assets/icons/Insert_Image.svg',
-                        width: 26,
-                        height: 26,
-                        colorFilter: const ColorFilter.mode(
-                          Color.fromRGBO(
-                            100,
-                            99,
-                            99,
-                            0.7,
-                          ), // AppColors.darkGreyText.withOpacity(0.7)
-                          BlendMode.srcIn,
-                        ),
-                        errorBuilder: (context, error, stackTrace) =>
-                            const Icon(
-                              Icons.image_outlined,
-                              color: AppColors.darkGreyText,
-                            ),
-                      ),
-                      onPressed: () {
-                        // print("Insert image tapped");
-                      },
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
-                    ),
-                    IconButton(
-                      icon: SvgPicture.asset(
-                        'assets/icons/Send_message.svg',
-                        errorBuilder: (context, error, stackTrace) =>
-                            const Icon(Icons.send, color: AppColors.primaryRed),
-                      ),
-                      onPressed: _sendMessage,
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+                  );
+                }
+              }
+              return const SizedBox.shrink(); // No typing indicator otherwise
+            },
+          ),
+          // Use the shared ChatMessageInputBar widget
+          ChatMessageInputBar(
+            messageController: _messageController,
+            onSendMessage: _sendMessage,
+            onAttachFile: _onAttachFile, // Pass the handler
+            onInsertImage: _onInsertImage, // Pass the handler
+            focusNode: _inputFocusNode,
           ),
         ],
       ),

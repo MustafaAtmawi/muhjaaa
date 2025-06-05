@@ -12,6 +12,7 @@ class _ChildProfile {
   final String placeholderInitial;
 
   _ChildProfile({
+    // Removed const as it's not used with a const list currently
     required this.id,
     required this.name,
     this.avatarUrl,
@@ -19,16 +20,8 @@ class _ChildProfile {
   });
 }
 
-// ... (imports)
 class AppDrawer extends StatelessWidget {
-  AppDrawer({super.key}); // Can be const if _childProfiles is const
-
-  // If _childProfiles were const and _ChildProfile had a const constructor
-  // final List<_ChildProfile> _childProfiles = const [
-  //   _ChildProfile(id: '1', name: 'خالد', placeholderInitial: 'خ'),
-  //   _ChildProfile(id: '2', name: 'أحمد', placeholderInitial: 'أ'),
-  // ];
-  // For now, keeping it non-const as _ChildProfile constructor isn't const by default.
+  AppDrawer({super.key});
 
   final List<_ChildProfile> _childProfiles = [
     _ChildProfile(id: '1', name: 'خالد', placeholderInitial: 'خ'),
@@ -36,14 +29,11 @@ class AppDrawer extends StatelessWidget {
   ];
 
   Widget _buildChildProfileAvatar(_ChildProfile profile, BuildContext context) {
-    // ... (logic for avatar)
-    // Example of const inside:
-    // const SizedBox(height: 4),
-    // Text(profile.name, style: const TextStyle(...))
-    // This method itself cannot be const if it depends on non-const `profile` members or context.
     return InkWell(
       onTap: () {
+        // TODO: Implement child profile selection logic
         Navigator.pop(context);
+        // Example: context.read<ChildManagementCubit>().selectChild(profile.id);
       },
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8.0),
@@ -52,26 +42,30 @@ class AppDrawer extends StatelessWidget {
           children: [
             CircleAvatar(
               radius: 28,
-              backgroundColor: AppColors.lightGrey.withAlpha(
-                127,
-              ), // Cannot be const if withAlpha is used directly
+              backgroundColor: const Color.fromRGBO(
+                157,
+                189,
+                187,
+                0.5,
+              ), // AppColors.lightGrey with 0.5 opacity
+              // In a real app, you'd load the avatarUrl if available:
+              // backgroundImage: profile.avatarUrl != null ? NetworkImage(profile.avatarUrl!) : null,
               child: profile.avatarUrl == null
                   ? Text(
                       profile.placeholderInitial,
                       style: const TextStyle(
-                        // Made const
                         fontSize: 20,
                         color: AppColors.primaryRed,
                         fontWeight: FontWeight.bold,
+                        fontFamily: 'Cairo',
                       ),
                     )
-                  : null, // Placeholder for actual image widget
+                  : null,
             ),
-            const SizedBox(height: 4), // Made const
+            const SizedBox(height: 4),
             Text(
               profile.name,
               style: const TextStyle(
-                // Made const
                 fontSize: 13,
                 color: AppColors.darkGreyText,
                 fontFamily: 'Cairo',
@@ -90,12 +84,11 @@ class AppDrawer extends StatelessWidget {
     return Drawer(
       backgroundColor: AppColors.white,
       child: ListView(
-        padding: EdgeInsets.zero, // Made const
+        padding: EdgeInsets.zero,
         children: <Widget>[
           Container(
             padding: const EdgeInsets.only(
-              // Made const
-              top: 40.0,
+              top: 40.0, // Adjust top padding considering status bar
               bottom: 20.0,
               left: 16.0,
               right: 16.0,
@@ -105,7 +98,8 @@ class AppDrawer extends StatelessWidget {
                 Expanded(
                   child: SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
-                    reverse: true,
+                    reverse:
+                        true, // To have items flow from right to left and scroll starts from right
                     child: Row(
                       children: _childProfiles
                           .map(
@@ -116,22 +110,34 @@ class AppDrawer extends StatelessWidget {
                     ),
                   ),
                 ),
-                const SizedBox(width: 10), // Made const
+                const SizedBox(width: 10),
                 InkWell(
                   onTap: () {
+                    // TODO: Implement "add child" logic
                     Navigator.pop(context);
+                    // Example: Navigator.pushNamed(context, '/add_child');
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text(
+                          "Add child action placeholder",
+                          textAlign: TextAlign.right,
+                        ),
+                      ),
+                    );
                   },
                   child: Container(
                     width: 56,
                     height: 56,
                     decoration: BoxDecoration(
-                      color: AppColors.lightGrey.withAlpha(
-                        51,
-                      ), // Cannot be const if withAlpha is used
+                      color: const Color.fromRGBO(
+                        157,
+                        189,
+                        187,
+                        0.2,
+                      ), // AppColors.lightGrey with 0.2 opacity
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: const Icon(
-                      // Made const
                       Icons.add,
                       size: 30,
                       color: AppColors.primaryRed,
@@ -142,59 +148,110 @@ class AppDrawer extends StatelessWidget {
             ),
           ),
           const Divider(
-            // Made const
             height: 1,
             thickness: 0.5,
             indent: 16,
             endIndent: 16,
+            color: Color.fromRGBO(
+              157,
+              189,
+              187,
+              0.5,
+            ), // Consistent light grey for divider
           ),
           _buildDrawerItem(
-            iconAsset: 'assets/icons/Person.svg',
+            context: context,
+            iconAsset: 'assets/icons/Person.svg', // Ensure asset exists
             text: 'حسابي',
             iconColor: iconColor,
             onTap: () {
               Navigator.pop(context);
-              Navigator.pushNamed(context, '/my_account');
+              // Navigator.pushNamed(context, '/my_account'); // Assuming you have this route
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text(
+                    "Navigate to My Account (Placeholder)",
+                    textAlign: TextAlign.right,
+                  ),
+                ),
+              );
             },
           ),
           _buildDrawerItem(
+            context: context,
             iconData: Icons.history_outlined,
             text: 'سجل نشاطاتي',
             iconColor: iconColor,
             onTap: () {
               Navigator.pop(context);
-              Navigator.pushNamed(context, '/activity_log');
+              // Navigator.pushNamed(context, '/activity_log');
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text(
+                    "Navigate to Activity Log (Placeholder)",
+                    textAlign: TextAlign.right,
+                  ),
+                ),
+              );
             },
           ),
           _buildDrawerItem(
+            context: context,
             iconData: Icons.settings_outlined,
             text: 'الإعدادات',
             iconColor: iconColor,
             onTap: () {
               Navigator.pop(context);
-              Navigator.pushNamed(context, '/settings');
+              // Navigator.pushNamed(context, '/settings');
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text(
+                    "Navigate to Settings (Placeholder)",
+                    textAlign: TextAlign.right,
+                  ),
+                ),
+              );
             },
           ),
           _buildDrawerItem(
+            context: context,
             iconData: Icons.people_alt_outlined,
             text: 'أطفالي',
             iconColor: iconColor,
             onTap: () {
               Navigator.pop(context);
-              Navigator.pushNamed(context, '/my_children');
+              // Navigator.pushNamed(context, '/my_children');
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text(
+                    "Navigate to My Children (Placeholder)",
+                    textAlign: TextAlign.right,
+                  ),
+                ),
+              );
+            },
+          ),
+          _buildDrawerItem(
+            // Example for Subscription Screen
+            context: context,
+            iconData: Icons.card_membership,
+            text: 'الاشتراك',
+            iconColor: iconColor,
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.pushNamed(context, '/subscription');
             },
           ),
           Padding(
-            padding: const EdgeInsets.all(20.0), // Made const
+            padding: const EdgeInsets.all(20.0),
             child: ElevatedButton.icon(
               icon: const Icon(
-                // Made const
                 Icons.logout,
                 color: AppColors.white,
-                textDirection: TextDirection.rtl,
+                textDirection: TextDirection
+                    .rtl, // Ensures icon is on the right of text for RTL
               ),
               label: const Text(
-                // Made const
                 'تسجيل الخروج',
                 style: TextStyle(
                   fontSize: 16,
@@ -204,48 +261,56 @@ class AppDrawer extends StatelessWidget {
                 ),
               ),
               onPressed: () {
+                // Close drawer first
                 Navigator.pop(context);
+                // Dispatch logout event
                 context.read<AuthCubit>().logout();
-                Navigator.of(context).pushNamedAndRemoveUntil(
-                  '/login',
+                // Navigate to login screen and remove all previous routes
+                Navigator.of(
+                  context,
+                  rootNavigator: true,
+                ).pushNamedAndRemoveUntil(
+                  '/login', // Ensure '/login' route is defined in main.dart
                   (Route<dynamic> route) => false,
                 );
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primaryRed,
-                minimumSize: const Size(double.infinity, 50), // Made const
+                minimumSize: const Size(double.infinity, 50),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
             ),
           ),
-          const SizedBox(height: 20), // Made const
+          const SizedBox(height: 20),
         ],
       ),
     );
   }
 
   Widget _buildDrawerItem({
+    required BuildContext
+    context, // Added context for navigation/snackbar if needed from item
     String? iconAsset,
     IconData? iconData,
     required String text,
-    required Color iconColor, // This cannot be const if iconColor isn't
+    required Color iconColor,
     required VoidCallback onTap,
   }) {
     return ListTile(
       leading: const Icon(
-        // Made const
+        // Chevron on the left for RTL
         Icons.chevron_left,
         color: AppColors.lightGrey,
         size: 22,
       ),
       title: Align(
-        alignment: AlignmentDirectional.centerStart,
+        alignment: AlignmentDirectional
+            .centerStart, // Text starts after potential icon
         child: Text(
           text,
           style: const TextStyle(
-            // Made const
             fontSize: 15,
             fontFamily: 'Cairo',
             color: AppColors.darkGreyText,
@@ -253,42 +318,21 @@ class AppDrawer extends StatelessWidget {
           ),
         ),
       ),
-      trailing: iconAsset != null
+      trailing:
+          iconAsset !=
+              null // Icon on the right for RTL
           ? SvgPicture.asset(
               iconAsset,
               width: 24,
               height: 24,
-              colorFilter: ColorFilter.mode(
-                iconColor,
-                BlendMode.srcIn,
-              ), // Cannot be const due to iconColor
+              colorFilter: ColorFilter.mode(iconColor, BlendMode.srcIn),
             )
-          : Icon(
-              iconData,
-              color: iconColor,
-              size: 24,
-            ), // Cannot be const due to iconColor
+          : Icon(iconData, color: iconColor, size: 24),
       onTap: onTap,
       contentPadding: const EdgeInsets.symmetric(
-        // Made const
         horizontal: 24.0,
-        vertical: 4.0,
+        vertical: 4.0, // Reduced vertical padding for a denser list
       ),
     );
   }
 }
-
-// Definition for _ChildProfile if it were to be const
-// class _ChildProfile {
-//   final String id;
-//   final String name;
-//   final String? avatarUrl;
-//   final String placeholderInitial;
-
-//   const _ChildProfile({ // Const constructor
-//     required this.id,
-//     required this.name,
-//     this.avatarUrl,
-//     required this.placeholderInitial,
-//   });
-// }

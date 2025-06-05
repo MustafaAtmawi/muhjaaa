@@ -5,8 +5,8 @@ import 'package:muhjaaa/utils/app_colors.dart';
 class ChatMessageInputBar extends StatelessWidget {
   final TextEditingController messageController;
   final VoidCallback onSendMessage;
-  final VoidCallback? onAttachFile;
-  final VoidCallback? onInsertImage;
+  final VoidCallback? onAttachFile; // Made optional
+  final VoidCallback? onInsertImage; // Made optional
   final FocusNode? focusNode;
 
   const ChatMessageInputBar({
@@ -22,23 +22,25 @@ class ChatMessageInputBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Material(
       elevation: 8.0,
-      color: Colors.white,
+      color: Colors.white, // Background of the bar's container
       child: Padding(
         padding: EdgeInsets.only(
           left: 12.0,
           right: 12.0,
           top: 8.0,
-          bottom: 8.0 + MediaQuery.of(context).padding.bottom,
+          bottom:
+              8.0 +
+              MediaQuery.of(context).padding.bottom, // Safe area for bottom
         ),
         child: Container(
           decoration: BoxDecoration(
-            color: AppColors.searchBarBg,
+            color: AppColors.searchBarBg, // Background of the text field area
             borderRadius: BorderRadius.circular(30.0),
           ),
           padding: const EdgeInsets.symmetric(horizontal: 8.0),
           child: Row(
             children: [
-              const SizedBox(width: 8),
+              const SizedBox(width: 8), // Padding for text field start
               Expanded(
                 child: TextField(
                   controller: messageController,
@@ -49,18 +51,21 @@ class ChatMessageInputBar extends StatelessWidget {
                     hintStyle: TextStyle(
                       fontFamily: 'Cairo',
                       fontSize: 15,
-                      color: AppColors.lightGrey,
+                      color: AppColors.lightGrey, // Hint text color
                     ),
-                    border: InputBorder.none,
-                    contentPadding: EdgeInsets.symmetric(vertical: 10),
+                    border:
+                        InputBorder.none, // No border for the text field itself
+                    contentPadding: EdgeInsets.symmetric(
+                      vertical: 10,
+                    ), // Vertical padding
                   ),
                   style: const TextStyle(
                     fontFamily: 'Cairo',
                     fontSize: 15,
-                    color: AppColors.darkGreyText,
+                    color: AppColors.darkGreyText, // Input text color
                   ),
                   minLines: 1,
-                  maxLines: 4,
+                  maxLines: 4, // Allow multi-line input
                   textInputAction: TextInputAction.send,
                   onSubmitted: (_) => onSendMessage(),
                 ),
@@ -69,21 +74,16 @@ class ChatMessageInputBar extends StatelessWidget {
               if (onAttachFile != null)
                 IconButton(
                   icon: SvgPicture.asset(
-                    'assets/icons/Insert_File.svg',
+                    'assets/icons/Insert_File.svg', // Ensure asset exists
                     width: 26,
                     height: 26,
                     colorFilter: const ColorFilter.mode(
-                      Color.fromRGBO(
-                        100,
-                        99,
-                        99,
-                        0.7,
-                      ), // AppColors.darkGreyText.withOpacity(0.7)
+                      AppColors.darkGreyText70, // Using AppColor
                       BlendMode.srcIn,
                     ),
                     errorBuilder: (context, error, stackTrace) => const Icon(
                       Icons.attach_file,
-                      color: AppColors.darkGreyText,
+                      color: AppColors.darkGreyText70,
                     ),
                   ),
                   onPressed: onAttachFile,
@@ -93,21 +93,16 @@ class ChatMessageInputBar extends StatelessWidget {
               if (onInsertImage != null)
                 IconButton(
                   icon: SvgPicture.asset(
-                    'assets/icons/Insert_Image.svg',
+                    'assets/icons/Insert_Image.svg', // Ensure asset exists
                     width: 26,
                     height: 26,
                     colorFilter: const ColorFilter.mode(
-                      Color.fromRGBO(
-                        100,
-                        99,
-                        99,
-                        0.7,
-                      ), // AppColors.darkGreyText.withOpacity(0.7)
+                      AppColors.darkGreyText70, // Using AppColor
                       BlendMode.srcIn,
                     ),
                     errorBuilder: (context, error, stackTrace) => const Icon(
                       Icons.image_outlined,
-                      color: AppColors.darkGreyText,
+                      color: AppColors.darkGreyText70,
                     ),
                   ),
                   onPressed: onInsertImage,
@@ -116,7 +111,10 @@ class ChatMessageInputBar extends StatelessWidget {
                 ),
               IconButton(
                 icon: SvgPicture.asset(
-                  'assets/icons/Send_message.svg',
+                  'assets/icons/Send_message.svg', // Ensure asset exists
+                  // No colorFilter needed if the SVG is already the desired color (e.g., AppColors.primaryRed)
+                  // If it needs to be colored, apply a ColorFilter:
+                  // colorFilter: const ColorFilter.mode(AppColors.primaryRed, BlendMode.srcIn),
                   errorBuilder: (context, error, stackTrace) =>
                       const Icon(Icons.send, color: AppColors.primaryRed),
                 ),
